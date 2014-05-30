@@ -288,12 +288,10 @@ static int get_v4l2_create32(struct v4l2_create_buffers __user *kp, struct
 
 static int __put_v4l2_format32(struct v4l2_format __user *kp, struct v4l2_format32 __user *up)
 {
-	__u32 type;
-
-	if (get_user(type, &kp->type))
+	if (put_user(kp->type, &up->type))
 		return -EFAULT;
 
-	switch (type) {
+	switch (kp->type) {
 	case V4L2_BUF_TYPE_VIDEO_CAPTURE:
 	case V4L2_BUF_TYPE_VIDEO_OUTPUT:
 		return put_v4l2_pix_format(&kp->fmt.pix, &up->fmt.pix);
@@ -317,8 +315,7 @@ static int __put_v4l2_format32(struct v4l2_format __user *kp, struct v4l2_format
 
 static int put_v4l2_format32(struct v4l2_format __user *kp, struct v4l2_format32 __user *up)
 {
-	if (!access_ok(VERIFY_WRITE, up, sizeof(struct v4l2_format32)) ||
-		put_user(kp->type, &up->type))
+	if (!access_ok(VERIFY_WRITE, up, sizeof(struct v4l2_format32)))
 		return -EFAULT;
 	return __put_v4l2_format32(kp, up);
 }
@@ -326,8 +323,8 @@ static int put_v4l2_format32(struct v4l2_format __user *kp, struct v4l2_format32
 static int put_v4l2_create32(struct v4l2_create_buffers __user *kp, struct v4l2_create_buffers32 __user *up)
 {
 	if (!access_ok(VERIFY_WRITE, up, sizeof(struct v4l2_create_buffers32)) ||
-	    copy_in_user(up, kp, offsetof(struct v4l2_create_buffers32, format.fmt)))
-			return -EFAULT;
+	    copy_to_user(up, kp, offsetof(struct v4l2_create_buffers32, format)))
+		return -EFAULT;
 	return __put_v4l2_format32(&kp->format, &up->format);
 }
 
