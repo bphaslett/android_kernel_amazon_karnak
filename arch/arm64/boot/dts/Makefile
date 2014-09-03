@@ -1,6 +1,6 @@
-dtb-$(CONFIG_ARCH_THUNDER) += thunder-88xx.dtb
-dtb-$(CONFIG_ARCH_VEXPRESS) += rtsm_ve-aemv8a.dtb foundation-v8.dtb
-dtb-$(CONFIG_ARCH_XGENE) += apm-mustang.dtb
+dts-dirs += apm
+dts-dirs += arm
+dts-dirs += cavium
 
 DTB_NAMES := $(subst $\",,$(CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE_NAMES))
 DTB_NAMES += $(subst $\",,$(CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE_NAMES_MIN_NO_APPEND))
