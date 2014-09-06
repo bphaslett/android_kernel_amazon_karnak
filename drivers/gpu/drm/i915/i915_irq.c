@@ -3776,8 +3776,6 @@ static irqreturn_t i8xx_irq_handler(int irq, void *arg)
 		I915_WRITE16(IIR, iir & ~flip_mask);
 		new_iir = I915_READ16(IIR); /* Flush posted writes */
 
-		i915_update_dri1_breadcrumb(dev);
-
 		if (iir & I915_USER_INTERRUPT)
 			notify_ring(dev, &dev_priv->ring[RCS]);
 
@@ -4014,8 +4012,6 @@ static irqreturn_t i915_irq_handler(int irq, void *arg)
 		iir = new_iir;
 	} while (iir & ~flip_mask);
 
-	i915_update_dri1_breadcrumb(dev);
-
 	return ret;
 }
 
@@ -4245,8 +4241,6 @@ static irqreturn_t i965_irq_handler(int irq, void *arg)
 		 */
 		iir = new_iir;
 	}
-
-	i915_update_dri1_breadcrumb(dev);
 
 	return ret;
 }
