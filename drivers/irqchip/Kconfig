@@ -132,6 +132,10 @@ config KEYSTONE_IRQ
 		Support for Texas Instruments Keystone 2 IRQ controller IP which
 		is part of the Keystone 2 IPC mechanism
 
+config MIPS_GIC
+	bool
+	select MIPS_CM
+
 config MTK_GIC
 	bool
 	select IRQ_DOMAIN
