@@ -440,9 +440,6 @@ source "drivers/misc/mediatek/mach/Kconfig"
 
 menu "Bus support"
 
-config ARM_AMBA
-	bool
-
 config PCI
 	bool "PCI support"
 	help
