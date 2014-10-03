@@ -583,7 +583,6 @@ static void imon_incoming_packet(struct imon_context *context,
 	struct device *dev = context->driver->dev;
 	int octet, bit;
 	unsigned char mask;
-	int i;
 
 	/*
 	 * just bail out if no listening IR client
@@ -597,13 +596,8 @@ static void imon_incoming_packet(struct imon_context *context,
 		return;
 	}
 
-	if (debug) {
-		dev_info(dev, "raw packet: ");
-		for (i = 0; i < len; ++i)
-			dev_dbg(dev, "%02x ", buf[i]);
-		dev_dbg(dev, "\n");
-	}
-
+	if (debug)
+		dev_info(dev, "raw packet: %*ph\n", len, buf);
 	/*
 	 * Translate received data to pulse and space lengths.
 	 * Received data is active low, i.e. pulses are 0 and
