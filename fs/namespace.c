@@ -1667,6 +1667,9 @@ SYSCALL_DEFINE2(umount, char __user *, name, int, flags)
 	retval = -EPERM;
 	if (flags & MNT_FORCE && !capable(CAP_SYS_ADMIN))
 		goto dput_and_out;
+	retval = -EPERM;
+	if (flags & MNT_FORCE && !capable(CAP_SYS_ADMIN))
+		goto dput_and_out;
 
 	retval = do_umount(mnt, flags);
 #ifdef CONFIG_UMOUNT_DEBUG
