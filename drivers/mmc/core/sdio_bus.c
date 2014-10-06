@@ -30,6 +30,8 @@
 #include <linux/mmc/host.h>
 #endif
 
+#define to_sdio_driver(d)	container_of(d, struct sdio_driver, drv)
+
 /* show configuration fields */
 #define sdio_config_attr(field, format_string)				\
 static ssize_t								\
