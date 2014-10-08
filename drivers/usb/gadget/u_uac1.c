@@ -221,9 +221,6 @@ static int gaudio_open_snd_dev(struct gaudio *card)
 	struct snd_pcm_file *pcm_file;
 	struct gaudio_snd_dev *snd;
 
-	if (!card)
-		return -ENODEV;
-
 	/* Open control device */
 	snd = &card->control;
 	snd->filp = filp_open(fn_cntl, O_RDWR, 0);
