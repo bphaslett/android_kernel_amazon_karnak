@@ -31,7 +31,7 @@ choice
 		select HW_HAS_PCI
 
 	config SOC_MT7620
-		bool "MT7620"
+		bool "MT7620/8"
 
 endchoice
 
