@@ -411,7 +411,8 @@ static int yurex_release(struct inode *inode, struct file *file)
 	return 0;
 }
 
-static ssize_t yurex_read(struct file *file, char *buffer, size_t count, loff_t *ppos)
+static ssize_t yurex_read(struct file *file, char __user *buffer, size_t count,
+			  loff_t *ppos)
 {
 	struct usb_yurex *dev;
 	int len = 0;
@@ -437,7 +438,8 @@ static ssize_t yurex_read(struct file *file, char *buffer, size_t count, loff_t 
 	return simple_read_from_buffer(buffer, count, ppos, in_buffer, len);
 }
 
-static ssize_t yurex_write(struct file *file, const char *user_buffer, size_t count, loff_t *ppos)
+static ssize_t yurex_write(struct file *file, const char __user *user_buffer,
+			   size_t count, loff_t *ppos)
 {
 	struct usb_yurex *dev;
 	int i, set = 0, retval = 0;
