@@ -633,6 +633,8 @@ static int __init pmac_probe(void)
 	smu_cmdbuf_abs = memblock_alloc_base(4096, 4096, 0x80000000UL);
 #endif /* CONFIG_PMAC_SMU */
 
+	pm_power_off = pmac_power_off;
+
 	return 1;
 }
 
@@ -664,7 +666,6 @@ define_machine(powermac) {
 	.get_irq		= NULL,	/* changed later */
 	.pci_irq_fixup		= pmac_pci_irq_fixup,
 	.restart		= pmac_restart,
-	.power_off		= pmac_power_off,
 	.halt			= pmac_halt,
 	.time_init		= pmac_time_init,
 	.get_boot_time		= pmac_get_boot_time,
