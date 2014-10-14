@@ -3847,7 +3847,6 @@ static int oxu_drv_probe(struct platform_device *pdev)
 	 */
 	info = devm_kzalloc(&pdev->dev, sizeof(struct oxu_info), GFP_KERNEL);
 	if (!info) {
-		dev_dbg(&pdev->dev, "error allocating memory\n");
 		ret = -EFAULT;
 		goto error;
 	}
