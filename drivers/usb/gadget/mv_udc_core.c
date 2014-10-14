@@ -2112,10 +2112,8 @@ static int mv_udc_probe(struct platform_device *pdev)
 	}
 
 	udc = devm_kzalloc(&pdev->dev, sizeof(*udc), GFP_KERNEL);
-	if (udc == NULL) {
-		dev_err(&pdev->dev, "failed to allocate memory for udc\n");
+	if (udc == NULL)
 		return -ENOMEM;
-	}
 
 	udc->done = &release_done;
 	udc->pdata = pdev->dev.platform_data;
@@ -2212,7 +2210,6 @@ static int mv_udc_probe(struct platform_device *pdev)
 	size = udc->max_eps * sizeof(struct mv_ep) *2;
 	udc->eps = devm_kzalloc(&pdev->dev, size, GFP_KERNEL);
 	if (udc->eps == NULL) {
-		dev_err(&pdev->dev, "allocate ep memory failed\n");
 		retval = -ENOMEM;
 		goto err_destroy_dma;
 	}
@@ -2221,7 +2218,6 @@ static int mv_udc_probe(struct platform_device *pdev)
 	udc->status_req = devm_kzalloc(&pdev->dev, sizeof(struct mv_req),
 					GFP_KERNEL);
 	if (!udc->status_req) {
-		dev_err(&pdev->dev, "allocate status_req memory failed\n");
 		retval = -ENOMEM;
 		goto err_destroy_dma;
 	}
