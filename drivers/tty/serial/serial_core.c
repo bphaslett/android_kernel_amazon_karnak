@@ -621,7 +621,7 @@ static void uart_throttle(struct tty_struct *tty)
 {
 	struct uart_state *state = tty->driver_data;
 	struct uart_port *port = state->uart_port;
-	uint32_t mask = 0;
+	upf_t mask = 0;
 
 	if (I_IXOFF(tty))
 		mask |= UPF_SOFT_FLOW;
@@ -644,7 +644,7 @@ static void uart_unthrottle(struct tty_struct *tty)
 {
 	struct uart_state *state = tty->driver_data;
 	struct uart_port *port = state->uart_port;
-	uint32_t mask = 0;
+	upf_t mask = 0;
 
 	if (I_IXOFF(tty))
 		mask |= UPF_SOFT_FLOW;
