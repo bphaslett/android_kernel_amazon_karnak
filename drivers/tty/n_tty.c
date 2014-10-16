@@ -2279,16 +2279,6 @@ static ssize_t n_tty_read(struct tty_struct *tty, struct file *file,
 			}
 		}
 
-		/* Deal with packet mode. */
-		if (packet && b == buf) {
-			if (tty_put_user(tty, TIOCPKT_DATA, b++)) {
-				retval = -EFAULT;
-				b--;
-				break;
-			}
-			nr--;
-		}
-
 		if (ldata->icanon && !L_EXTPROC(tty)) {
 			retval = canon_copy_from_read_buf(tty, &b, &nr);
 			if (retval == -EAGAIN) {
@@ -2298,6 +2288,17 @@ static ssize_t n_tty_read(struct tty_struct *tty, struct file *file,
 				break;
 		} else {
 			int uncopied;
+
+			/* Deal with packet mode. */
+			if (packet && b == buf) {
+				if (tty_put_user(tty, TIOCPKT_DATA, b++)) {
+					retval = -EFAULT;
+					b--;
+					break;
+				}
+				nr--;
+			}
+
 			/* The copy function takes the read lock and handles
 			   locking internally for this case */
 			uncopied = copy_from_read_buf(tty, &b, &nr);
