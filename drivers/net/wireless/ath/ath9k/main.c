@@ -283,6 +283,7 @@ static int ath_reset_internal(struct ath_softc *sc, struct ath9k_channel *hchan)
 	__ath_cancel_work(sc);
 
 	tasklet_disable(&sc->intr_tq);
+	tasklet_disable(&sc->bcon_tasklet);
 	spin_lock_bh(&sc->sc_pcu_lock);
 
 	if (!sc->cur_chan->offchannel) {
@@ -328,6 +329,7 @@ static int ath_reset_internal(struct ath_softc *sc, struct ath9k_channel *hchan)
 
 out:
 	spin_unlock_bh(&sc->sc_pcu_lock);
+	tasklet_enable(&sc->bcon_tasklet);
 	tasklet_enable(&sc->intr_tq);
 
 	return r;
