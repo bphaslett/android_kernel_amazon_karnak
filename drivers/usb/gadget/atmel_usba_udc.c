@@ -1789,8 +1789,6 @@ static int atmel_usba_start(struct usb_gadget *gadget,
 	clk_enable(udc->pclk);
 	clk_enable(udc->hclk);
 
-	DBG(DBG_GADGET, "registered driver `%s'\n", driver->driver.name);
-
 	udc->vbus_prev = 0;
 	if (gpio_is_valid(udc->vbus_pin))
 		enable_irq(gpio_to_irq(udc->vbus_pin));
