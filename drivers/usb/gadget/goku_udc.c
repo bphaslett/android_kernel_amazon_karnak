@@ -993,8 +993,7 @@ static int goku_get_frame(struct usb_gadget *_gadget)
 
 static int goku_udc_start(struct usb_gadget *g,
 		struct usb_gadget_driver *driver);
-static int goku_udc_stop(struct usb_gadget *g,
-		struct usb_gadget_driver *driver);
+static int goku_udc_stop(struct usb_gadget *g);
 
 static const struct usb_gadget_ops goku_ops = {
 	.get_frame	= goku_get_frame,
@@ -1369,8 +1368,7 @@ stop_activity(struct goku_udc *dev, struct usb_gadget_driver *driver)
 		udc_enable(dev);
 }
 
-static int goku_udc_stop(struct usb_gadget *g,
-		struct usb_gadget_driver *driver)
+static int goku_udc_stop(struct usb_gadget *g)
 {
 	struct goku_udc	*dev = to_goku_udc(g);
 	unsigned long	flags;

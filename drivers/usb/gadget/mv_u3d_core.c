@@ -1273,8 +1273,7 @@ static int mv_u3d_start(struct usb_gadget *g,
 	return 0;
 }
 
-static int mv_u3d_stop(struct usb_gadget *g,
-		struct usb_gadget_driver *driver)
+static int mv_u3d_stop(struct usb_gadget *g)
 {
 	struct mv_u3d *u3d = container_of(g, struct mv_u3d, gadget);
 	struct mv_usb_platform_data *pdata = u3d->dev->platform_data;
