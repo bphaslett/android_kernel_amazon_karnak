@@ -2435,8 +2435,9 @@ static int pxa_udc_probe(struct platform_device *pdev)
 	}
 
 	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-	if (!regs)
-		return -ENXIO;
+	udc->regs = devm_ioremap_resource(&pdev->dev, regs);
+	if (IS_ERR(udc->regs))
+		return PTR_ERR(udc->regs);
 	udc->irq = platform_get_irq(pdev, 0);
 	if (udc->irq < 0)
 		return udc->irq;
@@ -2452,11 +2453,9 @@ static int pxa_udc_probe(struct platform_device *pdev)
 	if (udc->gpiod)
 		gpiod_direction_output(udc->gpiod, 0);
 
-	udc->clk = clk_get(&pdev->dev, NULL);
-	if (IS_ERR(udc->clk)) {
-		retval = PTR_ERR(udc->clk);
-		goto err_clk;
-	}
+	udc->clk = devm_clk_get(&pdev->dev, NULL);
+	if (IS_ERR(udc->clk))
+		return PTR_ERR(udc->clk);
 
 	retval = -ENOMEM;
 	udc->regs = ioremap(regs->start, resource_size(regs));
@@ -2473,30 +2472,23 @@ static int pxa_udc_probe(struct platform_device *pdev)
 	pxa_eps_setup(udc);
 
 	/* irq setup after old hardware state is cleaned up */
-	retval = request_irq(udc->irq, pxa_udc_irq,
-			IRQF_SHARED, driver_name, udc);
+	retval = devm_request_irq(&pdev->dev, udc->irq, pxa_udc_irq,
+				  IRQF_SHARED, driver_name, udc);
 	if (retval != 0) {
 		dev_err(udc->dev, "%s: can't get irq %i, err %d\n",
 			driver_name, udc->irq, retval);
-		goto err_irq;
+		goto err;
 	}
 
 	retval = usb_add_gadget_udc(&pdev->dev, &udc->gadget);
 	if (retval)
-		goto err_add_udc;
+		goto err;
 
 	pxa_init_debugfs(udc);
 
 	return 0;
 
-err_add_udc:
-	free_irq(udc->irq, udc);
-err_irq:
-	iounmap(udc->regs);
-err_map:
-	clk_put(udc->clk);
-	udc->clk = NULL;
-err_clk:
+err:
 	return retval;
 }
 
@@ -2510,7 +2502,6 @@ static int pxa_udc_remove(struct platform_device *_dev)
 
 	usb_del_gadget_udc(&udc->gadget);
 	usb_gadget_unregister_driver(udc->driver);
-	free_irq(udc->irq, udc);
 	pxa_cleanup_debugfs(udc);
 
 	usb_put_phy(udc->transceiver);
@@ -2518,8 +2509,12 @@ static int pxa_udc_remove(struct platform_device *_dev)
 	udc->transceiver = NULL;
 	platform_set_drvdata(_dev, NULL);
 	the_controller = NULL;
+<<<<<<< HEAD:drivers/usb/gadget/pxa27x_udc.c
 	clk_put(udc->clk);
 	iounmap(udc->regs);
+=======
+	clk_unprepare(udc->clk);
+>>>>>>> 95fcc6a9014f... usb: gadget: pxa27x_udc: use devm_* helpers:drivers/usb/gadget/udc/pxa27x_udc.c
 
 	return 0;
 }
