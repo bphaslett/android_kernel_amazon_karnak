@@ -1635,7 +1635,6 @@ static int at91_start(struct usb_gadget *gadget,
 	udc->enabled = 1;
 	udc->selfpowered = 1;
 
-	DBG("bound to %s\n", driver->driver.name);
 	return 0;
 }
 
@@ -1651,7 +1650,6 @@ static int at91_stop(struct usb_gadget *gadget,
 	at91_udp_write(udc, AT91_UDP_IDR, ~0);
 	spin_unlock_irqrestore(&udc->lock, flags);
 
-	DBG("unbound from %s\n", udc->driver->driver.name);
 	udc->driver = NULL;
 
 	return 0;
