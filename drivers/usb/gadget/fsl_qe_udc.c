@@ -2308,8 +2308,6 @@ static int fsl_qe_start(struct usb_gadget *gadget,
 	udc->ep0_dir = USB_DIR_OUT;
 	spin_unlock_irqrestore(&udc->lock, flags);
 
-	dev_info(udc->dev, "%s bind to driver %s\n", udc->gadget.name,
-			driver->driver.name);
 	return 0;
 }
 
@@ -2337,8 +2335,6 @@ static int fsl_qe_stop(struct usb_gadget *gadget,
 		nuke(loop_ep, -ESHUTDOWN);
 	spin_unlock_irqrestore(&udc->lock, flags);
 
-	dev_info(udc->dev, "unregistered gadget driver '%s'\r\n",
-			udc->driver->driver.name);
 	udc->driver = NULL;
 
 	return 0;
