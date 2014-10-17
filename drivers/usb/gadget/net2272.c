@@ -1472,8 +1472,6 @@ static int net2272_start(struct usb_gadget *_gadget,
 	 */
 	net2272_ep0_start(dev);
 
-	dev_dbg(dev->dev, "%s ready\n", driver->driver.name);
-
 	return 0;
 }
 
@@ -1515,8 +1513,6 @@ static int net2272_stop(struct usb_gadget *_gadget,
 	stop_activity(dev, NULL);
 	spin_unlock_irqrestore(&dev->lock, flags);
 
-	dev_dbg(dev->dev, "unregistered driver '%s'\n",
-			dev->driver->driver.name);
 	dev->driver = NULL;
 
 	return 0;
