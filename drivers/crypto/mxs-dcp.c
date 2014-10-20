@@ -1097,7 +1097,6 @@ static struct platform_driver mxs_dcp_driver = {
 	.remove	= mxs_dcp_remove,
 	.driver	= {
 		.name		= "mxs-dcp",
-		.owner		= THIS_MODULE,
 		.of_match_table	= mxs_dcp_dt_ids,
 	},
 };

@@ -1322,7 +1322,6 @@ static struct platform_driver omap_aes_driver = {
 	.remove	= omap_aes_remove,
 	.driver	= {
 		.name	= "omap-aes",
-		.owner	= THIS_MODULE,
 		.pm	= &omap_aes_pm_ops,
 		.of_match_table	= omap_aes_of_match,
 	},
