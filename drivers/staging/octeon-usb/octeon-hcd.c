@@ -3889,7 +3889,6 @@ static struct of_device_id octeon_usb_match[] = {
 static struct platform_driver octeon_usb_driver = {
 	.driver = {
 		.name       = "OcteonUSB",
-		.owner		= THIS_MODULE,
 		.of_match_table = octeon_usb_match,
 	},
 	.probe      = octeon_usb_probe,
