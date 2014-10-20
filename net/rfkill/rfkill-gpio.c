@@ -227,7 +227,6 @@ static struct platform_driver rfkill_gpio_driver = {
 	.remove = rfkill_gpio_remove,
 	.driver = {
 		.name = "rfkill_gpio",
-		.owner = THIS_MODULE,
 		.acpi_match_table = ACPI_PTR(rfkill_acpi_match),
 		.of_match_table = of_match_ptr(rfkill_of_match),
 	},
