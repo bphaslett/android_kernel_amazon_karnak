@@ -1241,7 +1241,6 @@ static struct platform_driver sh_msiof_spi_drv = {
 	.id_table	= spi_driver_ids,
 	.driver		= {
 		.name		= "spi_sh_msiof",
-		.owner		= THIS_MODULE,
 		.of_match_table = of_match_ptr(sh_msiof_match),
 	},
 };
