@@ -2028,7 +2028,6 @@ static struct platform_driver udc_driver = {
 	.remove		= __exit_p(usba_udc_remove),
 	.driver		= {
 		.name		= "atmel_usba_udc",
-		.owner		= THIS_MODULE,
 	},
 };
 
