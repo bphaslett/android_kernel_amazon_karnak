@@ -3945,7 +3945,6 @@ MODULE_DEVICE_TABLE(of, ucc_geth_match);
 static struct platform_driver ucc_geth_driver = {
 	.driver = {
 		.name = DRV_NAME,
-		.owner = THIS_MODULE,
 		.of_match_table = ucc_geth_match,
 	},
 	.probe		= ucc_geth_probe,
