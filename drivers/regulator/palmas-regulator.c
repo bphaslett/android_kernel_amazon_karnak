@@ -1614,7 +1614,6 @@ static struct platform_driver palmas_driver = {
 	.driver = {
 		.name = "palmas-pmic",
 		.of_match_table = of_palmas_match_tbl,
-		.owner = THIS_MODULE,
 	},
 	.probe = palmas_regulators_probe,
 };
