@@ -1099,7 +1099,6 @@ static struct platform_driver edma_driver = {
 	.remove		= edma_remove,
 	.driver = {
 		.name = "edma-dma-engine",
-		.owner = THIS_MODULE,
 	},
 };
 
