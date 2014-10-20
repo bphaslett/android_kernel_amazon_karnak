@@ -1224,7 +1224,6 @@ static int ipmmu_remove(struct platform_device *pdev)
 
 static struct platform_driver ipmmu_driver = {
 	.driver = {
-		.owner = THIS_MODULE,
 		.name = "ipmmu-vmsa",
 	},
 	.probe = ipmmu_probe,
