@@ -1214,7 +1214,6 @@ static struct platform_driver broadsheetfb_driver = {
 	.probe	= broadsheetfb_probe,
 	.remove = broadsheetfb_remove,
 	.driver	= {
-		.owner	= THIS_MODULE,
 		.name	= "broadsheetfb",
 	},
 };

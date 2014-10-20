@@ -1658,7 +1658,6 @@ static struct platform_driver da8xx_fb_driver = {
 	.remove = fb_remove,
 	.driver = {
 		   .name = DRIVER_NAME,
-		   .owner = THIS_MODULE,
 		   .pm	= &fb_pm_ops,
 		   },
 };
