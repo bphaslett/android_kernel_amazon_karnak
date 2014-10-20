@@ -3481,7 +3481,6 @@ static struct platform_driver serial8250_isa_driver = {
 	.resume		= serial8250_resume,
 	.driver		= {
 		.name	= "serial8250",
-		.owner	= THIS_MODULE,
 	},
 };
 
