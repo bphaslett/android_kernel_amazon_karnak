@@ -173,7 +173,6 @@ static struct platform_driver nvec_mouse_driver = {
 	.remove = nvec_mouse_remove,
 	.driver = {
 		.name = "nvec-mouse",
-		.owner = THIS_MODULE,
 		.pm = &nvec_mouse_pm_ops,
 	},
 };
