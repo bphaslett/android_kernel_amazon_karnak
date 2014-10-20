@@ -1862,7 +1862,6 @@ static struct platform_driver omap24xxcam_driver = {
 #endif
 	.driver	 = {
 		.name = CAM_NAME,
-		.owner = THIS_MODULE,
 	},
 };
 
