@@ -67,6 +67,8 @@ static struct {
 	 * an ongoing cpu hotplug operation.
 	 */
 	atomic_t refcount;
+	/* And allows lockless put_online_cpus(). */
+	atomic_t puts_pending;
 
 #ifdef CONFIG_DEBUG_LOCK_ALLOC
 	struct lockdep_map dep_map;
@@ -174,6 +176,12 @@ void cpu_hotplug_begin(void)
 
 	for (;;) {
 		mutex_lock(&cpu_hotplug.lock);
+		if (atomic_read(&cpu_hotplug.puts_pending)) {
+			int delta;
+
+			delta = atomic_xchg(&cpu_hotplug.puts_pending, 0);
+			cpu_hotplug.refcount -= delta;
+		}
 		prepare_to_wait(&cpu_hotplug.wq, &wait, TASK_UNINTERRUPTIBLE);
 		if (likely(!atomic_read(&cpu_hotplug.refcount)))
 			break;
