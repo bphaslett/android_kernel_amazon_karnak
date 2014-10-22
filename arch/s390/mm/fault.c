@@ -556,7 +556,7 @@ out:
 	return fault;
 }
 
-void __kprobes do_protection_exception(struct pt_regs *regs)
+void do_protection_exception(struct pt_regs *regs)
 {
 	unsigned long trans_exc_code;
 	int fault;
@@ -582,8 +582,9 @@ void __kprobes do_protection_exception(struct pt_regs *regs)
 	if (unlikely(fault))
 		do_fault_error(regs, fault);
 }
+NOKPROBE_SYMBOL(do_protection_exception);
 
-void __kprobes do_dat_exception(struct pt_regs *regs)
+void do_dat_exception(struct pt_regs *regs)
 {
 	int access, fault;
 
@@ -592,6 +593,7 @@ void __kprobes do_dat_exception(struct pt_regs *regs)
 	if (unlikely(fault))
 		do_fault_error(regs, fault);
 }
+NOKPROBE_SYMBOL(do_dat_exception);
 
 #ifdef CONFIG_PFAULT 
 /*
