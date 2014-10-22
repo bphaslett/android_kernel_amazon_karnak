@@ -57,6 +57,7 @@ config BRCMSTB_L2_IRQ
 
 config DW_APB_ICTL
 	bool
+	select GENERIC_IRQ_CHIP
 	select IRQ_DOMAIN
 
 config IMGPDC_IRQ
