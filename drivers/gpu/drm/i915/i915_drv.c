@@ -753,6 +753,8 @@ static int __i915_drm_thaw(struct drm_device *dev)
 
 	intel_opregion_notify_adapter(dev, PCI_D0);
 
+	drm_kms_helper_poll_enable(dev);
+
 	return 0;
 }
 
@@ -782,14 +784,7 @@ static int i915_resume_early(struct drm_device *dev)
 
 static int i915_drm_resume(struct drm_device *dev)
 {
-	int ret;
-
-	ret = __i915_drm_thaw(dev);
-	if (ret)
-		return ret;
-
-	drm_kms_helper_poll_enable(dev);
-	return 0;
+	return __i915_drm_thaw(dev);
 }
 
 static int i915_resume_legacy(struct drm_device *dev)
