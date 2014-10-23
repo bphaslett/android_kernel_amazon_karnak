@@ -649,7 +649,7 @@ static int i915_drm_suspend_late(struct drm_device *drm_dev)
 	return 0;
 }
 
-int i915_suspend(struct drm_device *dev, pm_message_t state)
+int i915_suspend_legacy(struct drm_device *dev, pm_message_t state)
 {
 	int error;
 
@@ -772,7 +772,7 @@ static int i915_drm_resume_early(struct drm_device *dev)
 	return ret;
 }
 
-static int i915_resume_legacy(struct drm_device *dev)
+int i915_resume_legacy(struct drm_device *dev)
 {
 	int ret;
 
@@ -784,11 +784,6 @@ static int i915_resume_legacy(struct drm_device *dev)
 		return ret;
 
 	return i915_drm_resume(dev);
-}
-
-int i915_resume(struct drm_device *dev)
-{
-	return i915_resume_legacy(dev);
 }
 
 /**
@@ -1583,7 +1578,7 @@ static struct drm_driver driver = {
 	.set_busid = drm_pci_set_busid,
 
 	/* Used in place of i915_pm_ops for non-DRIVER_MODESET */
-	.suspend = i915_suspend,
+	.suspend = i915_suspend_legacy,
 	.resume = i915_resume_legacy,
 
 	.device_is_agp = i915_driver_device_is_agp,
