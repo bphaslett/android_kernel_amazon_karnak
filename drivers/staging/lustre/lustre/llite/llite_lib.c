@@ -713,7 +713,6 @@ void lustre_dump_dentry(struct dentry *dentry, int recur)
 
 	list_for_each(tmp, &dentry->d_subdirs) {
 		struct dentry *d = list_entry(tmp, struct dentry, d_child);
-
 		lustre_dump_dentry(d, recur - 1);
 	}
 }
