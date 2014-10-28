@@ -674,6 +674,7 @@ struct dwc3_scratchpad_array {
  * @setup_packet_pending: true when there's a Setup Packet in FIFO. Workaround
  * @start_config_issued: true when StartConfig command has been issued
  * @three_stage_setup: set if we perform a three phase setup
+ * @disable_scramble_quirk: set if we enable the disable scramble quirk
  */
 struct dwc3 {
 	struct usb_ctrlrequest	*ctrl_req;
@@ -777,6 +778,8 @@ struct dwc3 {
 	unsigned		resize_fifos:1;
 	unsigned		setup_packet_pending:1;
 	unsigned		three_stage_setup:1;
+
+	unsigned		disable_scramble_quirk:1;
 };
 
 /* -------------------------------------------------------------------------- */
