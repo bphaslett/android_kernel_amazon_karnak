@@ -24,6 +24,7 @@
 #include <linux/topology.h>
 #include <linux/notifier.h>
 #include <linux/property.h>
+#include <linux/list.h>
 
 #include <asm/byteorder.h>
 #include <asm/errno.h>
@@ -1003,5 +1004,35 @@ static inline bool of_system_has_poweroff_source(const struct device_node *np)
 {
 	return of_property_read_bool(np, "poweroff-source");
 }
+
+/**
+ * Overlay support
+ */
+
+#ifdef CONFIG_OF_OVERLAY
+
+/* ID based overlays; the API for external users */
+int of_overlay_create(struct device_node *tree);
+int of_overlay_destroy(int id);
+int of_overlay_destroy_all(void);
+
+#else
+
+static inline int of_overlay_create(struct device_node *tree)
+{
+	return -ENOTSUPP;
+}
+
+static inline int of_overlay_destroy(int id)
+{
+	return -ENOTSUPP;
+}
+
+static inline int of_overlay_destroy_all(void)
+{
+	return -ENOTSUPP;
+}
+
+#endif
 
 #endif /* _LINUX_OF_H */
