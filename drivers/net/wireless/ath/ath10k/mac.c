@@ -3314,9 +3314,10 @@ static void ath10k_cancel_hw_scan(struct ieee80211_hw *hw,
 	struct ath10k *ar = hw->priv;
 
 	mutex_lock(&ar->conf_mutex);
-	cancel_delayed_work_sync(&ar->scan.timeout);
 	ath10k_scan_abort(ar);
 	mutex_unlock(&ar->conf_mutex);
+
+	cancel_delayed_work_sync(&ar->scan.timeout);
 }
 
 static void ath10k_set_key_h_def_keyidx(struct ath10k *ar,
@@ -3833,9 +3834,10 @@ static int ath10k_cancel_remain_on_channel(struct ieee80211_hw *hw)
 	struct ath10k *ar = hw->priv;
 
 	mutex_lock(&ar->conf_mutex);
-	cancel_delayed_work_sync(&ar->scan.timeout);
 	ath10k_scan_abort(ar);
 	mutex_unlock(&ar->conf_mutex);
+
+	cancel_delayed_work_sync(&ar->scan.timeout);
 
 	return 0;
 }
