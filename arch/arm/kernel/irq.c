@@ -31,6 +31,7 @@
 #include <linux/smp.h>
 #include <linux/init.h>
 #include <linux/seq_file.h>
+#include <linux/ratelimit.h>
 #include <linux/errno.h>
 #include <linux/list.h>
 #include <linux/kallsyms.h>
@@ -464,8 +465,8 @@ void migrate_irqs(void)
 		affinity_broken = migrate_one_irq(desc);
 		raw_spin_unlock(&desc->lock);
 
-		if (affinity_broken && printk_ratelimit())
-			pr_warn("IRQ%u no longer affine to CPU%u\n",
+		if (affinity_broken)
+			pr_warn_ratelimited("IRQ%u no longer affine to CPU%u\n",
 				i, smp_processor_id());
 	}
 #endif
