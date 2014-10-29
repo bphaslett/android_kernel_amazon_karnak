@@ -1340,7 +1340,7 @@ static int device_rx_srv(struct vnt_private *pDevice, unsigned int uIdx)
 		if (!pRD->pRDInfo->skb)
 			break;
 
-		if (device_receive_frame(pDevice, pRD)) {
+		if (vnt_receive_frame(pDevice, pRD)) {
 			if (!device_alloc_rx_buf(pDevice, pRD)) {
 				dev_err(&pDevice->pcid->dev,
 					"can not allocate rx buf\n");
@@ -1348,7 +1348,6 @@ static int device_rx_srv(struct vnt_private *pDevice, unsigned int uIdx)
 			}
 		}
 		pRD->m_rd0RD0.f1Owner = OWNED_BY_NIC;
-		pDevice->dev->last_rx = jiffies;
 	}
 
 	pDevice->pCurrRD[uIdx] = pRD;
@@ -1364,9 +1363,12 @@ static bool device_alloc_rx_buf(struct vnt_private *pDevice, PSRxDesc pRD)
 	if (pRDInfo->skb == NULL)
 		return false;
 	ASSERT(pRDInfo->skb);
-	pRDInfo->skb->dev = pDevice->dev;
-	pRDInfo->skb_dma = pci_map_single(pDevice->pcid, skb_tail_pointer(pRDInfo->skb),
-					  pDevice->rx_buf_sz, PCI_DMA_FROMDEVICE);
+
+	pRDInfo->skb_dma =
+		pci_map_single(pDevice->pcid,
+			       skb_put(pRDInfo->skb, skb_tailroom(pRDInfo->skb)),
+			       pDevice->rx_buf_sz, PCI_DMA_FROMDEVICE);
+
 	*((unsigned int *)&(pRD->m_rd0RD0)) = 0; /* FIX cast */
 
 	pRD->m_rd0RD0.wResCount = cpu_to_le16(pDevice->rx_buf_sz);
@@ -1384,7 +1386,6 @@ bool device_alloc_frag_buf(struct vnt_private *pDevice,
 	if (pDeF->skb == NULL)
 		return false;
 	ASSERT(pDeF->skb);
-	pDeF->skb->dev = pDevice->dev;
 
 	return true;
 }
