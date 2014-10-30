@@ -28,6 +28,7 @@
 #include <linux/list.h>
 #include <linux/slab.h>
 #include <linux/compiler.h>
+#include <linux/ktime.h>
 
 #include <asm/uaccess.h>
 #include <asm/mmu_context.h>
@@ -1583,11 +1584,11 @@ int hibernate_preallocate_memory(void)
 	struct zone *zone;
 	unsigned long saveable, size, max_size, count, highmem, pages = 0;
 	unsigned long alloc, save_highmem, pages_highmem, avail_normal;
-	struct timeval start, stop;
+	ktime_t start, stop;
 	int error;
 
 	pr_warn("PM: Preallocating image memory... ");
-	do_gettimeofday(&start);
+	start = ktime_get();
 
 	error = memory_bm_create(&orig_bm, GFP_IMAGE, PG_ANY);
 	if (error)
@@ -1715,9 +1716,9 @@ int hibernate_preallocate_memory(void)
 	free_unnecessary_pages();
 
 out:
-	do_gettimeofday(&stop);
+	stop = ktime_get();
 	pr_warn("done (allocated %lu pages)\n", pages);
-	swsusp_show_speed(&start, &stop, pages, "Allocated");
+	swsusp_show_speed(start, stop, pages, "Allocated");
 
 	return 0;
 
