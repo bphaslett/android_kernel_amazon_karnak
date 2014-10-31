@@ -94,7 +94,7 @@ static int as3935_read(struct as3935_state *st, unsigned int reg, int *val)
 	*val = ret;
 
 	return 0;
-};
+}
 
 static int as3935_write(struct as3935_state *st,
 				unsigned int reg,
@@ -106,7 +106,7 @@ static int as3935_write(struct as3935_state *st,
 	buf[1] = val;
 
 	return spi_write(st->spi, buf, 2);
-};
+}
 
 static ssize_t as3935_sensor_sensitivity_show(struct device *dev,
 					struct device_attribute *attr,
@@ -121,7 +121,7 @@ static ssize_t as3935_sensor_sensitivity_show(struct device *dev,
 	val = (val & AS3935_AFE_MASK) >> 1;
 
 	return sprintf(buf, "%d\n", val);
-};
+}
 
 static ssize_t as3935_sensor_sensitivity_store(struct device *dev,
 					struct device_attribute *attr,
@@ -141,7 +141,7 @@ static ssize_t as3935_sensor_sensitivity_store(struct device *dev,
 	as3935_write(st, AS3935_AFE_GAIN, val << 1);
 
 	return len;
-};
+}
 
 static IIO_DEVICE_ATTR(sensor_sensitivity, S_IRUGO | S_IWUSR,
 	as3935_sensor_sensitivity_show, as3935_sensor_sensitivity_store, 0);
@@ -213,7 +213,7 @@ err_read:
 	iio_trigger_notify_done(indio_dev->trig);
 
 	return IRQ_HANDLED;
-};
+}
 
 static const struct iio_trigger_ops iio_interrupt_trigger_ops = {
 	.owner = THIS_MODULE,
@@ -237,7 +237,7 @@ static void as3935_event_work(struct work_struct *work)
 		dev_warn(&st->spi->dev, "noise level is too high");
 		break;
 	}
-};
+}
 
 static irqreturn_t as3935_interrupt_handler(int irq, void *private)
 {
@@ -414,7 +414,7 @@ unregister_trigger:
 	iio_trigger_unregister(st->trig);
 
 	return ret;
-};
+}
 
 static int as3935_remove(struct spi_device *spi)
 {
@@ -426,7 +426,7 @@ static int as3935_remove(struct spi_device *spi)
 	iio_trigger_unregister(st->trig);
 
 	return 0;
-};
+}
 
 static const struct spi_device_id as3935_id[] = {
 	{"as3935", 0},
