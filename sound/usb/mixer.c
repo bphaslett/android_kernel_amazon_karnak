@@ -2529,11 +2529,8 @@ _error:
 	return err;
 }
 
-void snd_usb_mixer_disconnect(struct list_head *p)
+void snd_usb_mixer_disconnect(struct usb_mixer_interface *mixer)
 {
-	struct usb_mixer_interface *mixer;
-
-	mixer = list_entry(p, struct usb_mixer_interface, list);
 	if (mixer->disconnected)
 		return;
 	if (mixer->urb)
