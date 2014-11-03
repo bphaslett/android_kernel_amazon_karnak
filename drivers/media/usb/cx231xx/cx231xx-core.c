@@ -100,7 +100,7 @@ int cx231xx_register_extension(struct cx231xx_ops *ops)
 	list_add_tail(&ops->next, &cx231xx_extension_devlist);
 	list_for_each_entry(dev, &cx231xx_devlist, devlist) {
 		ops->init(dev);
-		dev_info(&dev->udev->dev, "%s initialized\n", ops->name);
+		dev_info(dev->dev, "%s initialized\n", ops->name);
 	}
 	mutex_unlock(&cx231xx_devlist_mutex);
 	return 0;
@@ -114,7 +114,7 @@ void cx231xx_unregister_extension(struct cx231xx_ops *ops)
 	mutex_lock(&cx231xx_devlist_mutex);
 	list_for_each_entry(dev, &cx231xx_devlist, devlist) {
 		ops->fini(dev);
-		dev_info(&dev->udev->dev, "%s removed\n", ops->name);
+		dev_info(dev->dev, "%s removed\n", ops->name);
 	}
 
 	list_del(&ops->next);
@@ -227,7 +227,7 @@ int cx231xx_send_usb_command(struct cx231xx_i2c *i2c_bus,
 	/* call common vendor command request */
 	status = cx231xx_send_vendor_cmd(dev, &ven_req);
 	if (status < 0 && !dev->i2c_scan_running) {
-		dev_err(&dev->udev->dev, "%s: failed with status -%d\n",
+		dev_err(dev->dev, "%s: failed with status -%d\n",
 			__func__, status);
 	}
 
@@ -527,7 +527,7 @@ int cx231xx_set_video_alternate(struct cx231xx *dev)
 		    usb_set_interface(dev->udev, usb_interface_index,
 				      dev->video_mode.alt);
 		if (errCode < 0) {
-			dev_err(&dev->udev->dev,
+			dev_err(dev->dev,
 				"cannot change alt number to %d (error=%i)\n",
 				dev->video_mode.alt, errCode);
 			return errCode;
@@ -603,7 +603,7 @@ int cx231xx_set_alt_setting(struct cx231xx *dev, u8 index, u8 alt)
 	}
 
 	if (alt > 0 && max_pkt_size == 0) {
-		dev_err(&dev->udev->dev,
+		dev_err(dev->dev,
 			"can't change interface %d alt no. to %d: Max. Pkt size = 0\n",
 			usb_interface_index, alt);
 		/*To workaround error number=-71 on EP0 for videograbber,
@@ -619,7 +619,7 @@ int cx231xx_set_alt_setting(struct cx231xx *dev, u8 index, u8 alt)
 	if (usb_interface_index > 0) {
 		status = usb_set_interface(dev->udev, usb_interface_index, alt);
 		if (status < 0) {
-			dev_err(&dev->udev->dev,
+			dev_err(dev->dev,
 				"can't change interface %d alt no. to %d (err=%i)\n",
 				usb_interface_index, alt, status);
 			return status;
@@ -778,7 +778,7 @@ int cx231xx_ep5_bulkout(struct cx231xx *dev, u8 *firmware, u16 size)
 			buffer, 4096, &actlen, 2000);
 
 	if (ret)
-		dev_err(&dev->udev->dev,
+		dev_err(dev->dev,
 			"bulk message failed: %d (%d/%d)", ret,
 			size, actlen);
 	else {
@@ -1016,7 +1016,7 @@ int cx231xx_init_isoc(struct cx231xx *dev, int max_packets,
 	dev->video_mode.isoc_ctl.urb =
 	    kzalloc(sizeof(void *) * num_bufs, GFP_KERNEL);
 	if (!dev->video_mode.isoc_ctl.urb) {
-		dev_err(&dev->udev->dev,
+		dev_err(dev->dev,
 			"cannot alloc memory for usb buffers\n");
 		return -ENOMEM;
 	}
@@ -1024,7 +1024,7 @@ int cx231xx_init_isoc(struct cx231xx *dev, int max_packets,
 	dev->video_mode.isoc_ctl.transfer_buffer =
 	    kzalloc(sizeof(void *) * num_bufs, GFP_KERNEL);
 	if (!dev->video_mode.isoc_ctl.transfer_buffer) {
-		dev_err(&dev->udev->dev,
+		dev_err(dev->dev,
 			"cannot allocate memory for usbtransfer\n");
 		kfree(dev->video_mode.isoc_ctl.urb);
 		return -ENOMEM;
@@ -1045,7 +1045,7 @@ int cx231xx_init_isoc(struct cx231xx *dev, int max_packets,
 	for (i = 0; i < dev->video_mode.isoc_ctl.num_bufs; i++) {
 		urb = usb_alloc_urb(max_packets, GFP_KERNEL);
 		if (!urb) {
-			dev_err(&dev->udev->dev,
+			dev_err(dev->dev,
 				"cannot alloc isoc_ctl.urb %i\n", i);
 			cx231xx_uninit_isoc(dev);
 			return -ENOMEM;
@@ -1056,7 +1056,7 @@ int cx231xx_init_isoc(struct cx231xx *dev, int max_packets,
 		    usb_alloc_coherent(dev->udev, sb_size, GFP_KERNEL,
 				       &urb->transfer_dma);
 		if (!dev->video_mode.isoc_ctl.transfer_buffer[i]) {
-			dev_err(&dev->udev->dev,
+			dev_err(dev->dev,
 				"unable to allocate %i bytes for transfer buffer %i%s\n",
 				sb_size, i,
 				in_interrupt() ? " while in int" : "");
@@ -1091,7 +1091,7 @@ int cx231xx_init_isoc(struct cx231xx *dev, int max_packets,
 		rc = usb_submit_urb(dev->video_mode.isoc_ctl.urb[i],
 				    GFP_ATOMIC);
 		if (rc) {
-			dev_err(&dev->udev->dev,
+			dev_err(dev->dev,
 				"submit of urb %i failed (error=%i)\n", i,
 				rc);
 			cx231xx_uninit_isoc(dev);
@@ -1153,7 +1153,7 @@ int cx231xx_init_bulk(struct cx231xx *dev, int max_packets,
 	dev->video_mode.bulk_ctl.urb =
 	    kzalloc(sizeof(void *) * num_bufs, GFP_KERNEL);
 	if (!dev->video_mode.bulk_ctl.urb) {
-		dev_err(&dev->udev->dev,
+		dev_err(dev->dev,
 			"cannot alloc memory for usb buffers\n");
 		return -ENOMEM;
 	}
@@ -1161,7 +1161,7 @@ int cx231xx_init_bulk(struct cx231xx *dev, int max_packets,
 	dev->video_mode.bulk_ctl.transfer_buffer =
 	    kzalloc(sizeof(void *) * num_bufs, GFP_KERNEL);
 	if (!dev->video_mode.bulk_ctl.transfer_buffer) {
-		dev_err(&dev->udev->dev,
+		dev_err(dev->dev,
 			"cannot allocate memory for usbtransfer\n");
 		kfree(dev->video_mode.bulk_ctl.urb);
 		return -ENOMEM;
@@ -1182,7 +1182,7 @@ int cx231xx_init_bulk(struct cx231xx *dev, int max_packets,
 	for (i = 0; i < dev->video_mode.bulk_ctl.num_bufs; i++) {
 		urb = usb_alloc_urb(0, GFP_KERNEL);
 		if (!urb) {
-			dev_err(&dev->udev->dev,
+			dev_err(dev->dev,
 				"cannot alloc bulk_ctl.urb %i\n", i);
 			cx231xx_uninit_bulk(dev);
 			return -ENOMEM;
@@ -1194,7 +1194,7 @@ int cx231xx_init_bulk(struct cx231xx *dev, int max_packets,
 		    usb_alloc_coherent(dev->udev, sb_size, GFP_KERNEL,
 				     &urb->transfer_dma);
 		if (!dev->video_mode.bulk_ctl.transfer_buffer[i]) {
-			dev_err(&dev->udev->dev,
+			dev_err(dev->dev,
 				"unable to allocate %i bytes for transfer buffer %i%s\n",
 				sb_size, i,
 				in_interrupt() ? " while in int" : "");
@@ -1217,7 +1217,7 @@ int cx231xx_init_bulk(struct cx231xx *dev, int max_packets,
 		rc = usb_submit_urb(dev->video_mode.bulk_ctl.urb[i],
 				    GFP_ATOMIC);
 		if (rc) {
-			dev_err(&dev->udev->dev,
+			dev_err(dev->dev,
 				"submit of urb %i failed (error=%i)\n", i, rc);
 			cx231xx_uninit_bulk(dev);
 			return rc;
@@ -1321,7 +1321,7 @@ int cx231xx_dev_init(struct cx231xx *dev)
 		errCode = cx231xx_set_power_mode(dev,
 				 POLARIS_AVMODE_ENXTERNAL_AV);
 		if (errCode < 0) {
-			dev_err(&dev->udev->dev,
+			dev_err(dev->dev,
 				"%s: Failed to set Power - errCode [%d]!\n",
 				__func__, errCode);
 			return errCode;
@@ -1330,7 +1330,7 @@ int cx231xx_dev_init(struct cx231xx *dev)
 		errCode = cx231xx_set_power_mode(dev,
 				 POLARIS_AVMODE_ANALOGT_TV);
 		if (errCode < 0) {
-			dev_err(&dev->udev->dev,
+			dev_err(dev->dev,
 				"%s: Failed to set Power - errCode [%d]!\n",
 				__func__, errCode);
 			return errCode;
@@ -1345,14 +1345,14 @@ int cx231xx_dev_init(struct cx231xx *dev)
 	/* initialize Colibri block */
 	errCode = cx231xx_afe_init_super_block(dev, 0x23c);
 	if (errCode < 0) {
-		dev_err(&dev->udev->dev,
+		dev_err(dev->dev,
 			"%s: cx231xx_afe init super block - errCode [%d]!\n",
 			__func__, errCode);
 		return errCode;
 	}
 	errCode = cx231xx_afe_init_channels(dev);
 	if (errCode < 0) {
-		dev_err(&dev->udev->dev,
+		dev_err(dev->dev,
 			"%s: cx231xx_afe init channels - errCode [%d]!\n",
 			__func__, errCode);
 		return errCode;
@@ -1361,7 +1361,7 @@ int cx231xx_dev_init(struct cx231xx *dev)
 	/* Set DIF in By pass mode */
 	errCode = cx231xx_dif_set_standard(dev, DIF_USE_BASEBAND);
 	if (errCode < 0) {
-		dev_err(&dev->udev->dev,
+		dev_err(dev->dev,
 			"%s: cx231xx_dif set to By pass mode - errCode [%d]!\n",
 			__func__, errCode);
 		return errCode;
@@ -1370,7 +1370,7 @@ int cx231xx_dev_init(struct cx231xx *dev)
 	/* I2S block related functions */
 	errCode = cx231xx_i2s_blk_initialize(dev);
 	if (errCode < 0) {
-		dev_err(&dev->udev->dev,
+		dev_err(dev->dev,
 			"%s: cx231xx_i2s block initialize - errCode [%d]!\n",
 			__func__, errCode);
 		return errCode;
@@ -1379,7 +1379,7 @@ int cx231xx_dev_init(struct cx231xx *dev)
 	/* init control pins */
 	errCode = cx231xx_init_ctrl_pin_status(dev);
 	if (errCode < 0) {
-		dev_err(&dev->udev->dev,
+		dev_err(dev->dev,
 			"%s: cx231xx_init ctrl pins - errCode [%d]!\n",
 			__func__, errCode);
 		return errCode;
@@ -1406,7 +1406,7 @@ int cx231xx_dev_init(struct cx231xx *dev)
 		break;
 	}
 	if (errCode < 0) {
-		dev_err(&dev->udev->dev,
+		dev_err(dev->dev,
 			"%s: cx231xx_AGC mode to Analog - errCode [%d]!\n",
 			__func__, errCode);
 		return errCode;
@@ -1483,7 +1483,7 @@ int cx231xx_send_gpio_cmd(struct cx231xx *dev, u32 gpio_bit, u8 *gpio_val,
 	/* call common vendor command request */
 	status = cx231xx_send_vendor_cmd(dev, &ven_req);
 	if (status < 0) {
-		dev_err(&dev->udev->dev, "%s: failed with status -%d\n",
+		dev_err(dev->dev, "%s: failed with status -%d\n",
 			__func__, status);
 	}
 
