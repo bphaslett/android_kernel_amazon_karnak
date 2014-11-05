@@ -233,7 +233,7 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz
 	if (hugepd_none(*hpdp) && __hugepte_alloc(mm, hpdp, addr, pdshift, pshift))
 		return NULL;
 
-	return hugepte_offset(hpdp, addr, pdshift);
+	return hugepte_offset(*hpdp, addr, pdshift);
 }
 
 #else
@@ -273,7 +273,7 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz
 	if (hugepd_none(*hpdp) && __hugepte_alloc(mm, hpdp, addr, pdshift, pshift))
 		return NULL;
 
-	return hugepte_offset(hpdp, addr, pdshift);
+	return hugepte_offset(*hpdp, addr, pdshift);
 }
 #endif
 
@@ -539,7 +539,7 @@ static void hugetlb_free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
 	do {
 		pmd = pmd_offset(pud, addr);
 		next = pmd_addr_end(addr, end);
-		if (!is_hugepd(pmd)) {
+		if (!is_hugepd(__hugepd(pmd_val(*pmd)))) {
 			/*
 			 * if it is not hugepd pointer, we should already find
 			 * it cleared.
@@ -588,7 +588,7 @@ static void hugetlb_free_pud_range(struct mmu_gather *tlb, pgd_t *pgd,
 	do {
 		pud = pud_offset(pgd, addr);
 		next = pud_addr_end(addr, end);
-		if (!is_hugepd(pud)) {
+		if (!is_hugepd(__hugepd(pud_val(*pud)))) {
 			if (pud_none_or_clear_bad(pud))
 				continue;
 			hugetlb_free_pmd_range(tlb, pud, addr, next, floor,
@@ -654,7 +654,7 @@ void hugetlb_free_pgd_range(struct mmu_gather *tlb,
 	do {
 		next = pgd_addr_end(addr, end);
 		pgd = pgd_offset(tlb->mm, addr);
-		if (!is_hugepd(pgd)) {
+		if (!is_hugepd(__hugepd(pgd_val(*pgd)))) {
 			if (pgd_none_or_clear_bad(pgd))
 				continue;
 			hugetlb_free_pud_range(tlb, pgd, addr, next, floor, ceiling);
@@ -722,12 +722,11 @@ static unsigned long hugepte_addr_end(unsigned long addr, unsigned long end,
 	return (__boundary - 1 < end - 1) ? __boundary : end;
 }
 
-int gup_hugepd(hugepd_t *hugepd, unsigned pdshift,
-	       unsigned long addr, unsigned long end,
-	       int write, struct page **pages, int *nr)
+int gup_huge_pd(hugepd_t hugepd, unsigned long addr, unsigned pdshift,
+		unsigned long end, int write, struct page **pages, int *nr)
 {
 	pte_t *ptep;
-	unsigned long sz = 1UL << hugepd_shift(*hugepd);
+	unsigned long sz = 1UL << hugepd_shift(hugepd);
 	unsigned long next;
 
 	ptep = hugepte_offset(hugepd, addr, pdshift);
@@ -970,7 +969,7 @@ pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea, unsigned *shift
 	else if (pgd_huge(pgd)) {
 		ret_pte = (pte_t *) pgdp;
 		goto out;
-	} else if (is_hugepd(&pgd))
+	} else if (is_hugepd(__hugepd(pgd_val(pgd))))
 		hpdp = (hugepd_t *)&pgd;
 	else {
 		/*
@@ -987,7 +986,7 @@ pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea, unsigned *shift
 		else if (pud_huge(pud)) {
 			ret_pte = (pte_t *) pudp;
 			goto out;
-		} else if (is_hugepd(&pud))
+		} else if (is_hugepd(__hugepd(pud_val(pud))))
 			hpdp = (hugepd_t *)&pud;
 		else {
 			pdshift = PMD_SHIFT;
@@ -1008,7 +1007,7 @@ pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea, unsigned *shift
 			if (pmd_huge(pmd) || pmd_large(pmd)) {
 				ret_pte = (pte_t *) pmdp;
 				goto out;
-			} else if (is_hugepd(&pmd))
+			} else if (is_hugepd(__hugepd(pmd_val(pmd))))
 				hpdp = (hugepd_t *)&pmd;
 			else
 				return pte_offset_kernel(&pmd, ea);
@@ -1017,7 +1016,7 @@ pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea, unsigned *shift
 	if (!hpdp)
 		return NULL;
 
-	ret_pte = hugepte_offset(hpdp, ea, pdshift);
+	ret_pte = hugepte_offset(*hpdp, ea, pdshift);
 	pdshift = hugepd_shift(*hpdp);
 out:
 	if (shift)
@@ -1046,14 +1045,6 @@ int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
 
 	if ((pte_val(pte) & mask) != mask)
 		return 0;
-
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-	/*
-	 * check for splitting here
-	 */
-	if (pmd_trans_splitting(pte_pmd(pte)))
-		return 0;
-#endif
 
 	/* hugepages are never "special" */
 	VM_BUG_ON(!pfn_valid(pte_pfn(pte)));
