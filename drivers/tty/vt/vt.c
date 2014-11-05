@@ -2522,6 +2522,8 @@ int vt_kmsg_redirect(int new)
 }
 EXPORT_SYMBOL_GPL(vt_kmsg_redirect);
 
+#define vt_get_kmsg_redirect() vt_kmsg_redirect(-1)
+
 /*
  *	Console on virtual terminal
  *
