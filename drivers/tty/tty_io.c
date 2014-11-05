@@ -2925,7 +2925,7 @@ long tty_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		case TCIFLUSH:
 		case TCIOFLUSH:
 		/* flush tty buffer and allow ldisc to process ioctl */
-			tty_buffer_flush(tty);
+			tty_buffer_flush(tty, NULL);
 			break;
 		}
 		break;
