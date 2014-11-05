@@ -1794,7 +1794,9 @@ int tty_release(struct inode *inode, struct file *filp)
 	if (tty->ops->close)
 		tty->ops->close(tty, filp);
 
-	tty_unlock(tty);
+	/* If tty is pty master, lock the slave pty (stable lock order) */
+	tty_lock_slave(o_tty);
+
 	/*
 	 * Sanity check: if tty->count is going to zero, there shouldn't be
 	 * any waiters on tty->read_wait or tty->write_wait.  We test the
@@ -1808,8 +1810,6 @@ int tty_release(struct inode *inode, struct file *filp)
 	 * Thus this test wouldn't be triggered at the time the slave closed,
 	 * so we do it now.
 	 */
-	tty_lock_pair(tty, o_tty);
-
 	while (1) {
 		do_sleep = 0;
 
@@ -1891,7 +1891,9 @@ int tty_release(struct inode *inode, struct file *filp)
 	/* check whether both sides are closing ... */
 	final = !tty->count && !(o_tty && o_tty->count);
 
-	tty_unlock_pair(tty, o_tty);
+	tty_unlock_slave(o_tty);
+	tty_unlock(tty);
+
 	/* At this point, the tty->count == 0 should ensure a dead tty
 	   cannot be re-opened by a racing opener */
 
