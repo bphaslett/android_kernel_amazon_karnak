@@ -580,6 +580,7 @@ static int __init hidg_bind(struct usb_configuration *c, struct usb_function *f)
 {
 	struct usb_ep		*ep;
 	struct f_hidg		*hidg = func_to_hidg(f);
+	struct device		*device;
 	int			status;
 	dev_t			dev;
 
@@ -647,10 +648,16 @@ static int __init hidg_bind(struct usb_configuration *c, struct usb_function *f)
 	if (status)
 		goto fail;
 
-	device_create(hidg_class, NULL, dev, NULL, "%s%d", "hidg", hidg->minor);
+	device = device_create(hidg_class, NULL, dev, NULL,
+			       "%s%d", "hidg", hidg->minor);
+	if (IS_ERR(device)) {
+		status = PTR_ERR(device);
+		goto del;
+	}
 
 	return 0;
-
+del:
+	cdev_del(&hidg->cdev);
 fail:
 	ERROR(f->config->cdev, "hidg_bind FAILED\n");
 	if (hidg->req != NULL) {
