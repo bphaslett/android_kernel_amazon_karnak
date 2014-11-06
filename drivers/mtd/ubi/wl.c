@@ -1288,10 +1288,8 @@ out_not_moved:
 /*MTK start*/
 	if (erase_e2 == 1) {
 		err = do_sync_erase(ubi, e2, vol_id, lnum, torture);
-		if (err) {
-			kmem_cache_free(ubi_wl_entry_slab, e2);
+		if (err)
 			goto out_ro;
-		}
 	} else {
 		spin_lock(&ubi->wl_lock);
 		wl_tree_add(e2, &ubi->free);
