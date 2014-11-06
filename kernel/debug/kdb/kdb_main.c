@@ -12,6 +12,7 @@
  */
 
 #include <linux/ctype.h>
+#include <linux/types.h>
 #include <linux/string.h>
 #include <linux/kernel.h>
 #include <linux/kmsg_dump.h>
@@ -23,6 +24,7 @@
 #include <linux/vmalloc.h>
 #include <linux/atomic.h>
 #include <linux/module.h>
+#include <linux/moduleparam.h>
 #include <linux/mm.h>
 #include <linux/init.h>
 #include <linux/kallsyms.h>
@@ -45,6 +47,12 @@
 #ifdef CONFIG_MTK_EXTMEM
 #include <linux/exm_driver.h>
 #endif
+
+#undef	MODULE_PARAM_PREFIX
+#define	MODULE_PARAM_PREFIX "kdb."
+
+static int kdb_cmd_enabled;
+module_param_named(cmd_enable, kdb_cmd_enabled, int, 0600);
 
 #define GREP_LEN 256
 char kdb_grep_string[GREP_LEN];
@@ -125,6 +133,7 @@ static kdbmsg_t kdbmsgs[] = {
 	KDBMSG(BADLENGTH, "Invalid length field"),
 	KDBMSG(NOBP, "No Breakpoint exists"),
 	KDBMSG(BADADDR, "Invalid address"),
+	KDBMSG(NOPERM, "Permission denied"),
 };
 #undef KDBMSG
 
@@ -498,6 +507,15 @@ int kdbgetaddrarg(int argc, const char **argv, int *nextarg,
 	char symbol = '\0';
 	char *cp;
 	kdb_symtab_t symtab;
+
+	/*
+	 * If the enable flags prohibit both arbitrary memory access
+	 * and flow control then there are no reasonable grounds to
+	 * provide symbol lookup.
+	 */
+	if (!kdb_check_flags(KDB_ENABLE_MEM_READ | KDB_ENABLE_FLOW_CTRL,
+			     kdb_cmd_enabled, false))
+		return KDB_NOPERM;
 
 	/*
 	 * Process arguments which follow the following syntax:
@@ -1032,6 +1050,10 @@ int kdb_parse(const char *cmdstr)
 
 	if (i < kdb_max_commands) {
 		int result;
+
+		if (!kdb_check_flags(tp->cmd_flags, kdb_cmd_enabled, argc <= 1))
+			return KDB_NOPERM;
+
 		KDB_STATE_SET(CMD);
 		result = (*tp->cmd_func)(argc-1, (const char **)argv);
 		if (result && ignore_errors && result > KDB_CMD_GO)
@@ -1965,10 +1987,14 @@ static int kdb_rm(int argc, const char **argv)
  */
 static int kdb_sr(int argc, const char **argv)
 {
+	bool check_mask =
+	    !kdb_check_flags(KDB_ENABLE_ALL, kdb_cmd_enabled, false);
+
 	if (argc != 1)
 		return KDB_ARGCOUNT;
+
 	kdb_trap_printk++;
-	__handle_sysrq(*argv[1], false);
+	__handle_sysrq(*argv[1], check_mask);
 	kdb_trap_printk--;
 
 	return 0;
@@ -2418,6 +2444,8 @@ static int kdb_help(int argc, const char **argv)
 		if (KDB_FLAG(CMD_INTERRUPT))
 			return 0;
 		if (!kt->cmd_name)
+			continue;
+		if (!kdb_check_flags(kt->cmd_flags, kdb_cmd_enabled, true))
 			continue;
 		if (strlen(kt->cmd_usage) > 20)
 			space = "\n                                    ";
