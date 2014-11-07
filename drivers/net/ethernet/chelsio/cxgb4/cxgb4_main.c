@@ -3806,7 +3806,7 @@ int cxgb4_read_tpte(struct net_device *dev, u32 stag, __be32 *tpte)
 {
 	struct adapter *adap;
 	u32 offset, memtype, memaddr;
-	u32 edc0_size, edc1_size, mc0_size, mc1_size;
+	u32 edc0_size, edc1_size, mc0_size, mc1_size, size;
 	u32 edc0_end, edc1_end, mc0_end, mc1_end;
 	int ret;
 
@@ -3820,9 +3820,12 @@ int cxgb4_read_tpte(struct net_device *dev, u32 stag, __be32 *tpte)
 	 * and EDC1.  Some cards will have neither MC0 nor MC1, most cards have
 	 * MC0, and some have both MC0 and MC1.
 	 */
-	edc0_size = EDRAM_SIZE_GET(t4_read_reg(adap, MA_EDRAM0_BAR)) << 20;
-	edc1_size = EDRAM_SIZE_GET(t4_read_reg(adap, MA_EDRAM1_BAR)) << 20;
-	mc0_size = EXT_MEM_SIZE_GET(t4_read_reg(adap, MA_EXT_MEMORY_BAR)) << 20;
+	size = t4_read_reg(adap, MA_EDRAM0_BAR_A);
+	edc0_size = EDRAM0_SIZE_G(size) << 20;
+	size = t4_read_reg(adap, MA_EDRAM1_BAR_A);
+	edc1_size = EDRAM1_SIZE_G(size) << 20;
+	size = t4_read_reg(adap, MA_EXT_MEMORY0_BAR_A);
+	mc0_size = EXT_MEM0_SIZE_G(size) << 20;
 
 	edc0_end = edc0_size;
 	edc1_end = edc0_end + edc1_size;
@@ -3842,9 +3845,8 @@ int cxgb4_read_tpte(struct net_device *dev, u32 stag, __be32 *tpte)
 			/* T4 only has a single memory channel */
 			goto err;
 		} else {
-			mc1_size = EXT_MEM_SIZE_GET(
-					t4_read_reg(adap,
-						    MA_EXT_MEMORY1_BAR)) << 20;
+			size = t4_read_reg(adap, MA_EXT_MEMORY1_BAR_A);
+			mc1_size = EXT_MEM1_SIZE_G(size) << 20;
 			mc1_end = mc0_end + mc1_size;
 			if (offset < mc1_end) {
 				memtype = MEM_MC1;
