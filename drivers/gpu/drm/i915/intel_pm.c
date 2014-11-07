@@ -5335,6 +5335,9 @@ static void cherryview_enable_rps(struct drm_device *dev)
 
 	val = vlv_punit_read(dev_priv, PUNIT_REG_GPU_FREQ_STS);
 
+	/* RPS code assumes GPLL is used */
+	WARN_ONCE((val & GPLLENABLE) == 0, "GPLL not enabled\n");
+
 	DRM_DEBUG_DRIVER("GPLL enabled? %s\n", val & GPLLENABLE ? "yes" : "no");
 	DRM_DEBUG_DRIVER("GPU status: 0x%08x\n", val);
 
@@ -5414,6 +5417,9 @@ static void valleyview_enable_rps(struct drm_device *dev)
 	I915_WRITE(GEN6_RC_CONTROL, rc6_mode);
 
 	val = vlv_punit_read(dev_priv, PUNIT_REG_GPU_FREQ_STS);
+
+	/* RPS code assumes GPLL is used */
+	WARN_ONCE((val & GPLLENABLE) == 0, "GPLL not enabled\n");
 
 	DRM_DEBUG_DRIVER("GPLL enabled? %s\n", val & GPLLENABLE ? "yes" : "no");
 	DRM_DEBUG_DRIVER("GPU status: 0x%08x\n", val);
