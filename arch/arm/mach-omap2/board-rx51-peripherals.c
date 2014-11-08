@@ -498,7 +498,6 @@ static struct omap2_hsmmc_info mmc[] __initdata = {
 		.cover_only	= true,
 		.gpio_cd	= 160,
 		.gpio_wp	= -EINVAL,
-		.power_saving	= true,
 	},
 	{
 		.name		= "internal",
@@ -508,7 +507,6 @@ static struct omap2_hsmmc_info mmc[] __initdata = {
 		.gpio_cd	= -EINVAL,
 		.gpio_wp	= -EINVAL,
 		.nonremovable	= true,
-		.power_saving	= true,
 		.remux		= rx51_mmc2_remux,
 	},
 	{}	/* Terminator */
