@@ -81,8 +81,9 @@ innolux	Innolux Corporation
 intel	Intel Corporation
 intercontrol	Inter Control Group
 isee	ISEE 2007 S.L.
-issi	ISSI
+isil    Intersil (deprecated, use isl)
 isl	Intersil
+issi	ISSI
 karo	Ka-Ro electronics GmbH
 keymile	Keymile GmbH
 lacie	LaCie
