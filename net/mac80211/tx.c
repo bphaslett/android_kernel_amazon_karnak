@@ -1424,8 +1424,7 @@ EXPORT_SYMBOL(ieee80211_tx_prepare_skb);
  * Returns false if the frame couldn't be transmitted but was queued instead.
  */
 static bool ieee80211_tx(struct ieee80211_sub_if_data *sdata,
-			 struct sk_buff *skb, bool txpending,
-			 enum ieee80211_band band)
+			 struct sk_buff *skb, bool txpending)
 {
 	struct ieee80211_local *local = sdata->local;
 	struct ieee80211_tx_data tx;
@@ -1449,8 +1448,6 @@ static bool ieee80211_tx(struct ieee80211_sub_if_data *sdata,
 	} else if (unlikely(res_prepare == TX_QUEUED)) {
 		return true;
 	}
-
-	info->band = band;
 
 	/* set up hw_queue value early */
 	if (!(info->flags & IEEE80211_TX_CTL_TX_OFFCHAN) ||
@@ -1499,8 +1496,7 @@ static int ieee80211_skb_resize(struct ieee80211_sub_if_data *sdata,
 	return 0;
 }
 
-void ieee80211_xmit(struct ieee80211_sub_if_data *sdata, struct sk_buff *skb,
-		    enum ieee80211_band band)
+void ieee80211_xmit(struct ieee80211_sub_if_data *sdata, struct sk_buff *skb)
 {
 	struct ieee80211_local *local = sdata->local;
 	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
@@ -1535,7 +1531,7 @@ void ieee80211_xmit(struct ieee80211_sub_if_data *sdata, struct sk_buff *skb,
 	}
 
 	ieee80211_set_qos_hdr(sdata, skb);
-	ieee80211_tx(sdata, skb, false, band);
+	ieee80211_tx(sdata, skb, false);
 }
 
 static bool ieee80211_parse_tx_radiotap(struct sk_buff *skb)
@@ -1755,7 +1751,8 @@ netdev_tx_t ieee80211_monitor_start_xmit(struct sk_buff *skb,
 				     sdata->vif.type))
 		goto fail_rcu;
 
-	ieee80211_xmit(sdata, skb, chandef->chan->band);
+	info->band = chandef->chan->band;
+	ieee80211_xmit(sdata, skb);
 	rcu_read_unlock();
 
 	return NETDEV_TX_OK;
@@ -2218,8 +2215,9 @@ void __ieee80211_subif_start_xmit(struct sk_buff *skb,
 
 	info->flags = info_flags;
 	info->ack_frame_id = info_id;
+	info->band = band;
 
-	ieee80211_xmit(sdata, skb, band);
+	ieee80211_xmit(sdata, skb);
 	rcu_read_unlock();
 
 	return;
@@ -2275,8 +2273,8 @@ static bool ieee80211_tx_pending_skb(struct ieee80211_local *local,
 			dev_kfree_skb(skb);
 			return true;
 		}
-		result = ieee80211_tx(sdata, skb, true,
-				      chanctx_conf->def.chan->band);
+		info->band = chanctx_conf->def.chan->band;
+		result = ieee80211_tx(sdata, skb, true);
 	} else {
 		struct sk_buff_head skbs;
 
@@ -3057,6 +3055,7 @@ void __ieee80211_tx_skb_tid_band(struct ieee80211_sub_if_data *sdata,
 	 * requirements are that we do not come into tx with bhs on.
 	 */
 	local_bh_disable();
-	ieee80211_xmit(sdata, skb, band);
+	IEEE80211_SKB_CB(skb)->band = band;
+	ieee80211_xmit(sdata, skb);
 	local_bh_enable();
 }
