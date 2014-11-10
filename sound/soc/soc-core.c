@@ -501,12 +501,9 @@ EXPORT_SYMBOL_GPL(snd_soc_get_pcm_runtime);
 static int soc_ac97_dev_unregister(struct snd_soc_codec *codec)
 {
 	if (codec->ac97->dev.bus)
-		device_unregister(&codec->ac97->dev);
+		device_del(&codec->ac97->dev);
 	return 0;
 }
-
-/* stop no dev release warning */
-static void soc_ac97_device_release(struct device *dev){}
 
 /* register ac97 codec to bus */
 static int soc_ac97_dev_register(struct snd_soc_codec *codec)
@@ -515,12 +512,11 @@ static int soc_ac97_dev_register(struct snd_soc_codec *codec)
 
 	codec->ac97->dev.bus = &ac97_bus_type;
 	codec->ac97->dev.parent = codec->component.card->dev;
-	codec->ac97->dev.release = soc_ac97_device_release;
 
 	dev_set_name(&codec->ac97->dev, "%d-%d:%s",
 		     codec->component.card->snd_card->number, 0,
 		     codec->component.name);
-	err = device_register(&codec->ac97->dev);
+	err = device_add(&codec->ac97->dev);
 	if (err < 0) {
 		dev_err(codec->dev, "ASoC: Can't register ac97 bus\n");
 		codec->ac97->dev.bus = NULL;
@@ -1913,6 +1909,11 @@ static struct platform_driver soc_driver = {
 	.remove		= soc_remove,
 };
 
+static void soc_ac97_device_release(struct device *dev)
+{
+	kfree(to_ac97_t(dev));
+}
+
 /**
  * snd_soc_new_ac97_codec - initailise AC97 device
  * @codec: audio codec
@@ -1937,12 +1938,14 @@ int snd_soc_new_ac97_codec(struct snd_soc_codec *codec,
 
 	codec->ac97->bus->ops = ops;
 	codec->ac97->num = num;
+	codec->ac97->dev.release = soc_ac97_device_release;
 
 	/*
 	 * Mark the AC97 device to be created by us. This way we ensure that the
 	 * device will be registered with the device subsystem later on.
 	 */
 	codec->ac97_created = 1;
+	device_initialize(&codec->ac97->dev);
 
 	return 0;
 }
@@ -2117,7 +2120,8 @@ void snd_soc_free_ac97_codec(struct snd_soc_codec *codec)
 	soc_unregister_ac97_codec(codec);
 #endif
 	kfree(codec->ac97->bus);
-	kfree(codec->ac97);
+	codec->ac97->bus = NULL;
+	put_device(&codec->ac97->dev);
 	codec->ac97 = NULL;
 	codec->ac97_created = 0;
 }
