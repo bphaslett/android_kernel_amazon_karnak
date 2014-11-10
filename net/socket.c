@@ -2062,24 +2062,14 @@ static int ___sys_sendmsg(struct socket *sock, struct msghdr __user *msg,
 	if (err)
 		return err;
 
-	if (msg_sys->msg_iovlen > UIO_FASTIOV) {
-		err = -EMSGSIZE;
-		if (msg_sys->msg_iovlen > UIO_MAXIOV)
-			goto out;
-		err = -ENOMEM;
-		iov = kmalloc(msg_sys->msg_iovlen * sizeof(struct iovec),
-			      GFP_KERNEL);
-		if (!iov)
-			goto out;
-	}
-
 	/* This will also move the address data into kernel space */
-	if (MSG_CMSG_COMPAT & flags) {
-		err = verify_compat_iovec(msg_sys, iov, &address, VERIFY_READ);
-	} else
-		err = verify_iovec(msg_sys, iov, &address, VERIFY_READ);
+	if (MSG_CMSG_COMPAT & flags)
+		err = verify_compat_iovec(msg_sys, iovstack, &address, WRITE);
+	else
+		err = verify_iovec(msg_sys, iovstack, &address, WRITE);
 	if (err < 0)
 		goto out_freeiov;
+	iov = msg_sys->msg_iov;
 	total_len = err;
 
 	err = -ENOBUFS;
@@ -2148,7 +2138,6 @@ out_freectl:
 out_freeiov:
 	if (iov != iovstack)
 		kfree(iov);
-out:
 	return err;
 }
 
@@ -2272,28 +2261,18 @@ static int ___sys_recvmsg(struct socket *sock, struct msghdr __user *msg,
 	if (err)
 		return err;
 
-	if (msg_sys->msg_iovlen > UIO_FASTIOV) {
-		err = -EMSGSIZE;
-		if (msg_sys->msg_iovlen > UIO_MAXIOV)
-			goto out;
-		err = -ENOMEM;
-		iov = kmalloc(msg_sys->msg_iovlen * sizeof(struct iovec),
-			      GFP_KERNEL);
-		if (!iov)
-			goto out;
-	}
-
 	/* Save the user-mode address (verify_iovec will change the
 	 * kernel msghdr to use the kernel address space)
 	 */
 	uaddr = (__force void __user *)msg_sys->msg_name;
 	uaddr_len = COMPAT_NAMELEN(msg);
 	if (MSG_CMSG_COMPAT & flags)
-		err = verify_compat_iovec(msg_sys, iov, &addr, VERIFY_WRITE);
+		err = verify_compat_iovec(msg_sys, iovstack, &addr, READ);
 	else
-		err = verify_iovec(msg_sys, iov, &addr, VERIFY_WRITE);
+		err = verify_iovec(msg_sys, iovstack, &addr, READ);
 	if (err < 0)
 		goto out_freeiov;
+	iov = msg_sys->msg_iov;
 	total_len = err;
 
 	cmsg_ptr = (unsigned long)msg_sys->msg_control;
@@ -2334,7 +2313,6 @@ static int ___sys_recvmsg(struct socket *sock, struct msghdr __user *msg,
 out_freeiov:
 	if (iov != iovstack)
 		kfree(iov);
-out:
 	return err;
 }
 
