@@ -156,6 +156,8 @@ static void console_callback(struct work_struct *ignored);
 static void blank_screen_t(unsigned long dummy);
 static void set_palette(struct vc_data *vc);
 
+#define vt_get_kmsg_redirect() vt_kmsg_redirect(-1)
+
 static int printable;		/* Is console ready for printing? */
 int default_utf8 = true;
 module_param(default_utf8, int, S_IRUGO | S_IWUSR);
@@ -2525,8 +2527,6 @@ int vt_kmsg_redirect(int new)
 		return kmsg_con;
 }
 EXPORT_SYMBOL_GPL(vt_kmsg_redirect);
-
-#define vt_get_kmsg_redirect() vt_kmsg_redirect(-1)
 
 /*
  *	Console on virtual terminal
