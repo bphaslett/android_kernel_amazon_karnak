@@ -207,14 +207,14 @@ error:
 /* Setup a communication between mcs7780 and agilent chip. */
 static inline int mcs_setup_transceiver_agilent(struct mcs_cb *mcs)
 {
-	IRDA_WARNING("This transceiver type is not supported yet.\n");
+	net_warn_ratelimited("This transceiver type is not supported yet\n");
 	return 1;
 }
 
 /* Setup a communication between mcs7780 and sharp chip. */
 static inline int mcs_setup_transceiver_sharp(struct mcs_cb *mcs)
 {
-	IRDA_WARNING("This transceiver type is not supported yet.\n");
+	net_warn_ratelimited("This transceiver type is not supported yet\n");
 	return 1;
 }
 
@@ -223,9 +223,9 @@ static inline int mcs_setup_transceiver(struct mcs_cb *mcs)
 {
 	int ret = 0;
 	__u16 rval;
-	char *msg;
+	const char *msg;
 
-	msg = "Basic transceiver setup error.";
+	msg = "Basic transceiver setup error";
 
 	/* read value of MODE Register, set the DRIVER and RESET bits
 	* and write value back out to MODE Register
@@ -271,7 +271,7 @@ static inline int mcs_setup_transceiver(struct mcs_cb *mcs)
 	if(unlikely(ret))
 		goto error;
 
-	msg = "transceiver model specific setup error.";
+	msg = "transceiver model specific setup error";
 	switch (mcs->transceiver_type) {
 	case MCS_TSC_VISHAY:
 		ret = mcs_setup_transceiver_vishay(mcs);
@@ -286,8 +286,8 @@ static inline int mcs_setup_transceiver(struct mcs_cb *mcs)
 		break;
 
 	default:
-		IRDA_WARNING("Unknown transceiver type: %d\n",
-			     mcs->transceiver_type);
+		net_warn_ratelimited("Unknown transceiver type: %d\n",
+				     mcs->transceiver_type);
 		ret = 1;
 	}
 	if (unlikely(ret))
@@ -310,7 +310,7 @@ static inline int mcs_setup_transceiver(struct mcs_cb *mcs)
 			goto error;
 	}
 
-	msg = "transceiver reset.";
+	msg = "transceiver reset";
 
 	ret = mcs_get_reg(mcs, MCS_MODE_REG, &rval);
 	if (unlikely(ret != 2))
@@ -325,7 +325,7 @@ static inline int mcs_setup_transceiver(struct mcs_cb *mcs)
 		return ret;
 
 error:
-	IRDA_ERROR("%s\n", msg);
+	net_err_ratelimited("%s\n", msg);
 	return ret;
 }
 
@@ -409,8 +409,8 @@ static void mcs_unwrap_mir(struct mcs_cb *mcs, __u8 *buf, int len)
 
 	new_len = len - 2;
 	if(unlikely(new_len <= 0)) {
-		IRDA_ERROR("%s short frame length %d\n",
-			     mcs->netdev->name, new_len);
+		net_err_ratelimited("%s short frame length %d\n",
+				    mcs->netdev->name, new_len);
 		++mcs->netdev->stats.rx_errors;
 		++mcs->netdev->stats.rx_length_errors;
 		return;
@@ -419,8 +419,8 @@ static void mcs_unwrap_mir(struct mcs_cb *mcs, __u8 *buf, int len)
 	fcs = irda_calc_crc16(~fcs, buf, len);
 
 	if(fcs != GOOD_FCS) {
-		IRDA_ERROR("crc error calc 0x%x len %d\n",
-			   fcs, new_len);
+		net_err_ratelimited("crc error calc 0x%x len %d\n",
+				    fcs, new_len);
 		mcs->netdev->stats.rx_errors++;
 		mcs->netdev->stats.rx_crc_errors++;
 		return;
@@ -462,8 +462,8 @@ static void mcs_unwrap_fir(struct mcs_cb *mcs, __u8 *buf, int len)
 
 	new_len = len - 4;
 	if(unlikely(new_len <= 0)) {
-		IRDA_ERROR("%s short frame length %d\n",
-			   mcs->netdev->name, new_len);
+		net_err_ratelimited("%s short frame length %d\n",
+				    mcs->netdev->name, new_len);
 		++mcs->netdev->stats.rx_errors;
 		++mcs->netdev->stats.rx_length_errors;
 		return;
@@ -471,7 +471,8 @@ static void mcs_unwrap_fir(struct mcs_cb *mcs, __u8 *buf, int len)
 
 	fcs = ~(crc32_le(~0, buf, new_len));
 	if(fcs != get_unaligned_le32(buf + new_len)) {
-		IRDA_ERROR("crc error calc 0x%x len %d\n", fcs, new_len);
+		net_err_ratelimited("crc error calc 0x%x len %d\n",
+				    fcs, new_len);
 		mcs->netdev->stats.rx_errors++;
 		mcs->netdev->stats.rx_crc_errors++;
 		return;
@@ -593,7 +594,7 @@ static int mcs_speed_change(struct mcs_cb *mcs)
 	} while(cnt++ < 100 && (rval & MCS_IRINTX));
 
 	if (cnt > 100) {
-		IRDA_ERROR("unable to change speed\n");
+		net_err_ratelimited("unable to change speed\n");
 		ret = -EIO;
 		goto error;
 	}
@@ -644,8 +645,8 @@ static int mcs_speed_change(struct mcs_cb *mcs)
 
 		default:
 			ret = 1;
-			IRDA_WARNING("Unknown transceiver type: %d\n",
-				     mcs->transceiver_type);
+			net_warn_ratelimited("Unknown transceiver type: %d\n",
+					     mcs->transceiver_type);
 		}
 	if (unlikely(ret))
 		goto error;
@@ -741,7 +742,7 @@ static int mcs_net_open(struct net_device *netdev)
 	sprintf(hwname, "usb#%d", mcs->usbdev->devnum);
 	mcs->irlap = irlap_open(netdev, &mcs->qos, hwname);
 	if (!mcs->irlap) {
-		IRDA_ERROR("mcs7780: irlap_open failed\n");
+		net_err_ratelimited("mcs7780: irlap_open failed\n");
 		goto error2;
 	}
 
@@ -861,7 +862,7 @@ static netdev_tx_t mcs_hard_xmit(struct sk_buff *skb,
 			  mcs->out_buf, wraplen, mcs_send_irq, mcs);
 
 	if ((ret = usb_submit_urb(mcs->tx_urb, GFP_ATOMIC))) {
-		IRDA_ERROR("failed tx_urb: %d\n", ret);
+		net_err_ratelimited("failed tx_urb: %d\n", ret);
 		switch (ret) {
 		case -ENODEV:
 		case -EPIPE:
@@ -909,7 +910,7 @@ static int mcs_probe(struct usb_interface *intf,
 
 	ret = usb_reset_configuration(udev);
 	if (ret != 0) {
-		IRDA_ERROR("mcs7780: usb reset configuration failed\n");
+		net_err_ratelimited("mcs7780: usb reset configuration failed\n");
 		goto error2;
 	}
 
