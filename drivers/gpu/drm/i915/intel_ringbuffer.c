@@ -668,7 +668,8 @@ err:
 	return ret;
 }
 
-static int intel_ring_workarounds_emit(struct intel_engine_cs *ring)
+static int intel_ring_workarounds_emit(struct intel_engine_cs *ring,
+				       struct intel_context *ctx)
 {
 	int ret, i;
 	struct drm_device *dev = ring->dev;
@@ -809,7 +810,7 @@ static int chv_init_workarounds(struct intel_engine_cs *ring)
 	return 0;
 }
 
-static int init_workarounds_ring(struct intel_engine_cs *ring)
+int init_workarounds_ring(struct intel_engine_cs *ring)
 {
 	struct drm_device *dev = ring->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
