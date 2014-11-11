@@ -814,3 +814,8 @@ config MMC_SUNXI
 config MMC_TUNE_WINDOW_LOGS
 	tristate "MMC Tuning window logs"
 	default n
+
+config MMC_TOSHIBA_PCI
+	tristate "Toshiba Type A SD/MMC Card Interface Driver"
+	depends on PCI
+	help
