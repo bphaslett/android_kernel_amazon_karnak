@@ -598,6 +598,8 @@ static unsigned int refill_fl(struct adapter *adapter, struct sge_fl *fl,
 	 */
 	BUG_ON(fl->avail + n > fl->size - FL_PER_EQ_UNIT);
 
+	gfp |= __GFP_NOWARN;
+
 	/*
 	 * If we support large pages, prefer large buffers and fail over to
 	 * small pages if we can't allocate large pages to satisfy the refill.
@@ -653,7 +655,7 @@ static unsigned int refill_fl(struct adapter *adapter, struct sge_fl *fl,
 
 alloc_small_pages:
 	while (n--) {
-		page = __skb_alloc_page(gfp | __GFP_NOWARN, NULL);
+		page = __dev_alloc_page(gfp);
 		if (unlikely(!page)) {
 			fl->alloc_failed++;
 			break;
