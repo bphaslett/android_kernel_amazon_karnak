@@ -2594,8 +2594,6 @@ static int megasas_change_queue_depth(struct scsi_device *sdev,
 	if (reason != SCSI_QDEPTH_DEFAULT)
 		return -EOPNOTSUPP;
 
-	if (queue_depth > sdev->host->can_queue)
-		queue_depth = sdev->host->can_queue;
 	scsi_adjust_queue_depth(sdev, queue_depth);
 
 	return queue_depth;
