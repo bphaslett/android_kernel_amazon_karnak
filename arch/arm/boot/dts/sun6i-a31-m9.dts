@@ -141,6 +141,17 @@
 		status = "okay";
 	};
 
+	leds {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&led_pins_m9>;
+
+		blue {
+			label = "m9:blue:usr";
+			gpios = <&pio 7 13 0>;
+		};
+	};
+
 	reg_usb1_vbus: usb1-vbus {
 		pinctrl-names = "default";
 		pinctrl-0 = <&usb1_vbus_pin_m9>;
