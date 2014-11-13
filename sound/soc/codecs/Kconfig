@@ -515,7 +515,8 @@ config SND_SOC_RT551X_TEST_ONLY
 	depends on SND_SOC_RT551X_SPI
 
 config SND_SOC_RT5631
-	tristate
+	tristate "Realtek ALC5631/RT5631 CODEC"
+	depends on I2C
 
 config SND_SOC_RT5640
 	tristate
