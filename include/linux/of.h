@@ -107,8 +107,6 @@ static inline struct device_node *of_node_get(struct device_node *node)
 static inline void of_node_put(struct device_node *node) { }
 #endif /* !CONFIG_OF_DYNAMIC */
 
-#ifdef CONFIG_OF
-
 /* Pointer for first entry in chain of all nodes. */
 extern struct device_node *of_root;
 extern struct device_node *of_chosen;
@@ -116,6 +114,7 @@ extern struct device_node *of_aliases;
 extern struct device_node *of_stdout;
 extern raw_spinlock_t devtree_lock;
 
+#ifdef CONFIG_OF
 static inline bool is_of_node(struct fwnode_handle *fwnode)
 {
 	return fwnode && fwnode->type == FWNODE_OF;
