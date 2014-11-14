@@ -179,11 +179,11 @@ struct prctl_mm_map {
 #define PR_SET_THP_DISABLE	41
 #define PR_GET_THP_DISABLE	42
 
-/* Sets the timerslack for arbitrary threads
- * arg2 slack value, 0 means "use default"
- * arg3 pid of the thread whose timer slack needs to be set
+/*
+ * Tell the kernel to start/stop helping userspace manage bounds tables.
  */
-#define PR_SET_TIMERSLACK_PID 43
+#define PR_MPX_ENABLE_MANAGEMENT  43
+#define PR_MPX_DISABLE_MANAGEMENT 44
 
 #define PR_SET_VMA		0x53564d41
 # define PR_SET_VMA_ANON_NAME		0
@@ -194,5 +194,11 @@ struct prctl_mm_map {
 # define PR_CAP_AMBIENT_RAISE		2
 # define PR_CAP_AMBIENT_LOWER		3
 # define PR_CAP_AMBIENT_CLEAR_ALL	4
+
+/* Sets the timerslack for arbitrary threads
+ * arg2 slack value, 0 means "use default"
+ * arg3 pid of the thread whose timer slack needs to be set
+ */
+#define PR_SET_TIMERSLACK_PID 59
 
 #endif /* _LINUX_PRCTL_H */
