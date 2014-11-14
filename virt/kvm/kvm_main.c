@@ -680,8 +680,8 @@ static int kvm_create_dirty_bitmap(struct kvm_memory_slot *memslot)
  * takes advantage of having initially sorted array and
  * known changed memslot position.
  */
-static void insert_memslot(struct kvm_memslots *slots,
-			   struct kvm_memory_slot *new)
+static void update_memslots(struct kvm_memslots *slots,
+			    struct kvm_memory_slot *new)
 {
 	int id = new->id;
 	int i = slots->id_to_index[id];
@@ -710,14 +710,6 @@ static void insert_memslot(struct kvm_memslots *slots,
 	slots->id_to_index[mslots[i].id] = i;
 }
 
-static void update_memslots(struct kvm_memslots *slots,
-			    struct kvm_memory_slot *new)
-{
-	if (new) {
-		insert_memslot(slots, new);
-	}
-}
-
 static int check_memory_region_flags(struct kvm_userspace_memory_region *mem)
 {
 	u32 valid_flags = KVM_MEM_LOG_DIRTY_PAGES;
@@ -733,7 +725,7 @@ static int check_memory_region_flags(struct kvm_userspace_memory_region *mem)
 }
 
 static struct kvm_memslots *install_new_memslots(struct kvm *kvm,
-		struct kvm_memslots *slots, struct kvm_memory_slot *new)
+		struct kvm_memslots *slots)
 {
 	struct kvm_memslots *old_memslots = kvm->memslots;
 
@@ -744,7 +736,6 @@ static struct kvm_memslots *install_new_memslots(struct kvm *kvm,
 	WARN_ON(old_memslots->generation & 1);
 	slots->generation = old_memslots->generation + 1;
 
-	update_memslots(slots, new);
 	rcu_assign_pointer(kvm->memslots, slots);
 	synchronize_srcu_expedited(&kvm->srcu);
 
@@ -881,7 +872,7 @@ int __kvm_set_memory_region(struct kvm *kvm,
 		slot = id_to_memslot(slots, mem->slot);
 		slot->flags |= KVM_MEMSLOT_INVALID;
 
-		old_memslots = install_new_memslots(kvm, slots, NULL);
+		old_memslots = install_new_memslots(kvm, slots);
 
 		/* slot was deleted or moved, clear iommu mapping */
 		kvm_iommu_unmap_pages(kvm, &old);
@@ -912,7 +903,8 @@ int __kvm_set_memory_region(struct kvm *kvm,
 		memset(&new.arch, 0, sizeof(new.arch));
 	}
 
-	old_memslots = install_new_memslots(kvm, slots, &new);
+	update_memslots(slots, &new);
+	old_memslots = install_new_memslots(kvm, slots);
 
 	kvm_arch_commit_memory_region(kvm, mem, &old, change);
 
