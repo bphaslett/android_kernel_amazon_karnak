@@ -2154,7 +2154,7 @@ config CPU_HAS_SMARTMIPS
 	  here.
 
 config CPU_MICROMIPS
-	depends on SYS_SUPPORTS_MICROMIPS
+	depends on 32BIT && SYS_SUPPORTS_MICROMIPS
 	bool "microMIPS"
 	help
 	  When this option is enabled the kernel will be built using the
