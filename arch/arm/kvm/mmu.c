@@ -1498,9 +1498,9 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
 		unmap_stage2_range(kvm, mem->guest_phys_addr, mem->memory_size);
 	else
 		stage2_flush_memslot(kvm, memslot);
-	spin_unlock(&kvm->mmu_lock);
 
 	up_read(&current->mm->mmap_sem);
+	spin_unlock(&kvm->mmu_lock);
 	return ret;
 }
 
