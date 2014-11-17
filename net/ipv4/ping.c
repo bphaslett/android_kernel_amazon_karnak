@@ -965,7 +965,7 @@ EXPORT_SYMBOL_GPL(ping_queue_rcv_skb);
  *	All we need to do is get the socket.
  */
 
-void ping_rcv(struct sk_buff *skb)
+bool ping_rcv(struct sk_buff *skb)
 {
 	struct sock *sk;
 	struct net *net = dev_net(skb->dev);
@@ -988,10 +988,10 @@ void ping_rcv(struct sk_buff *skb)
 			ping_queue_rcv_skb(sk, skb2);
 		/*mtk_net: don't put sock here, do sock_put after free skb*/
 		/* sock_put(sk); */			
-		return;
+		return true;
 	}
 
-	/* We're called from icmp_rcv(). kfree_skb() is done there. */
+	return false;
 }
 EXPORT_SYMBOL_GPL(ping_rcv);
 
