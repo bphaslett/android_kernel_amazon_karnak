@@ -388,6 +388,7 @@ config TOI_ZRAM_SUPPORT
 config PM_SLEEP
 	def_bool y
 	depends on SUSPEND || HIBERNATE_CALLBACKS
+	select PM_RUNTIME
 
 config PM_SLEEP_SMP
 	def_bool y
