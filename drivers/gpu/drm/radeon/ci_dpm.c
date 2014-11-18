@@ -3785,7 +3785,7 @@ static int ci_upload_dpm_level_enable_mask(struct radeon_device *rdev)
 				return -EINVAL;
 		}
 	}
-
+#if 0
 	if (!pi->pcie_dpm_key_disabled) {
 		if (pi->dpm_level_enable_mask.pcie_dpm_enable_mask) {
 			result = ci_send_msg_to_smc_with_parameter(rdev,
@@ -3795,7 +3795,7 @@ static int ci_upload_dpm_level_enable_mask(struct radeon_device *rdev)
 				return -EINVAL;
 		}
 	}
-
+#endif
 	return 0;
 }
 
@@ -4259,6 +4259,14 @@ int ci_dpm_force_performance_level(struct radeon_device *rdev,
 			}
 		}
 	} else if (level == RADEON_DPM_FORCED_LEVEL_AUTO) {
+		if (!pi->pcie_dpm_key_disabled) {
+			PPSMC_Result smc_result;
+
+			smc_result = ci_send_msg_to_smc(rdev,
+							PPSMC_MSG_PCIeDPM_UnForceLevel);
+			if (smc_result != PPSMC_Result_OK)
+				return -EINVAL;
+		}
 		ret = ci_upload_dpm_level_enable_mask(rdev);
 		if (ret)
 			return ret;
