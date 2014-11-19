@@ -58,7 +58,7 @@
 #define KSZPHY_CTRL_INT_ACTIVE_HIGH		BIT(9)
 #define KSZ9021_CTRL_INT_ACTIVE_HIGH		BIT(14)
 #define KS8737_CTRL_INT_ACTIVE_HIGH		BIT(14)
-#define KSZ8051_RMII_50MHZ_CLK			BIT(7)
+#define KSZPHY_RMII_REF_CLK_SEL			BIT(7)
 
 /* Write/read to/from extended registers */
 #define MII_KSZPHY_EXTREG                       0x0b
@@ -77,15 +77,19 @@
 struct kszphy_type {
 	u32 led_mode_reg;
 	bool has_broadcast_disable;
+	bool has_rmii_ref_clk_sel;
 };
 
 struct kszphy_priv {
 	const struct kszphy_type *type;
 	int led_mode;
+	bool rmii_ref_clk_sel;
+	bool rmii_ref_clk_sel_val;
 };
 
 static const struct kszphy_type ksz8021_type = {
 	.led_mode_reg		= MII_KSZPHY_CTRL_2,
+	.has_rmii_ref_clk_sel	= true,
 };
 
 static const struct kszphy_type ksz8041_type = {
@@ -100,21 +104,6 @@ static const struct kszphy_type ksz8081_type = {
 	.led_mode_reg		= MII_KSZPHY_CTRL_2,
 	.has_broadcast_disable	= true,
 };
-
-static int ksz_config_flags(struct phy_device *phydev)
-{
-	int regval;
-
-	if (phydev->dev_flags & (MICREL_PHY_50MHZ_CLK | MICREL_PHY_25MHZ_CLK)) {
-		regval = phy_read(phydev, MII_KSZPHY_CTRL);
-		if (phydev->dev_flags & MICREL_PHY_50MHZ_CLK)
-			regval |= KSZ8051_RMII_50MHZ_CLK;
-		else
-			regval &= ~KSZ8051_RMII_50MHZ_CLK;
-		return phy_write(phydev, MII_KSZPHY_CTRL, regval);
-	}
-	return 0;
-}
 
 static int kszphy_extended_write(struct phy_device *phydev,
 				u32 regnum, u16 val)
@@ -190,6 +179,22 @@ static int ks8737_config_intr(struct phy_device *phydev)
 	return rc < 0 ? rc : 0;
 }
 
+static int kszphy_rmii_clk_sel(struct phy_device *phydev, bool val)
+{
+	int ctrl;
+
+	ctrl = phy_read(phydev, MII_KSZPHY_CTRL);
+	if (ctrl < 0)
+		return ctrl;
+
+	if (val)
+		ctrl |= KSZPHY_RMII_REF_CLK_SEL;
+	else
+		ctrl &= ~KSZPHY_RMII_REF_CLK_SEL;
+
+	return phy_write(phydev, MII_KSZPHY_CTRL, ctrl);
+}
+
 static int kszphy_setup_led(struct phy_device *phydev, u32 reg, int val)
 {
 	int rc, temp, shift;
@@ -244,6 +249,7 @@ static int kszphy_config_init(struct phy_device *phydev)
 {
 	struct kszphy_priv *priv = phydev->priv;
 	const struct kszphy_type *type;
+	int ret;
 
 	if (!priv)
 		return 0;
@@ -252,6 +258,14 @@ static int kszphy_config_init(struct phy_device *phydev)
 
 	if (type->has_broadcast_disable)
 		kszphy_broadcast_disable(phydev);
+
+	if (priv->rmii_ref_clk_sel) {
+		ret = kszphy_rmii_clk_sel(phydev, priv->rmii_ref_clk_sel_val);
+		if (ret) {
+			dev_err(&phydev->dev, "failed to set rmii reference clock\n");
+			return ret;
+		}
+	}
 
 	if (priv->led_mode >= 0)
 		kszphy_setup_led(phydev, type->led_mode_reg, priv->led_mode);
@@ -263,24 +277,12 @@ static int ksz8021_config_init(struct phy_device *phydev)
 {
 	int rc;
 
-	kszphy_config_init(phydev);
-
-	rc = ksz_config_flags(phydev);
-	if (rc < 0)
+	rc = kszphy_config_init(phydev);
+	if (rc)
 		return rc;
 
 	rc = kszphy_broadcast_disable(phydev);
 
-	return rc < 0 ? rc : 0;
-}
-
-static int ks8051_config_init(struct phy_device *phydev)
-{
-	int rc;
-
-	kszphy_config_init(phydev);
-
-	rc = ksz_config_flags(phydev);
 	return rc < 0 ? rc : 0;
 }
 
@@ -529,6 +531,7 @@ static int kszphy_probe(struct phy_device *phydev)
 	const struct kszphy_type *type = phydev->drv->driver_data;
 	struct device_node *np = phydev->dev.of_node;
 	struct kszphy_priv *priv;
+	struct clk *clk;
 	int ret;
 
 	priv = devm_kzalloc(&phydev->dev, sizeof(*priv), GFP_KERNEL);
@@ -554,28 +557,32 @@ static int kszphy_probe(struct phy_device *phydev)
 		priv->led_mode = -1;
 	}
 
-	return 0;
-}
-
-static int ksz8021_probe(struct phy_device *phydev)
-{
-	struct clk *clk;
-
 	clk = devm_clk_get(&phydev->dev, "rmii-ref");
 	if (!IS_ERR(clk)) {
 		unsigned long rate = clk_get_rate(clk);
 
+		priv->rmii_ref_clk_sel = type->has_rmii_ref_clk_sel;
+
+		/* FIXME: add support for PHY revisions that have this bit
+		 * inverted (e.g. through new property or based on PHY ID).
+		 */
 		if (rate > 24500000 && rate < 25500000) {
-			phydev->dev_flags |= MICREL_PHY_25MHZ_CLK;
+			priv->rmii_ref_clk_sel_val = false;
 		} else if (rate > 49500000 && rate < 50500000) {
-			phydev->dev_flags |= MICREL_PHY_50MHZ_CLK;
+			priv->rmii_ref_clk_sel_val = true;
 		} else {
 			dev_err(&phydev->dev, "Clock rate out of range: %ld\n", rate);
 			return -EINVAL;
 		}
 	}
 
-	return kszphy_probe(phydev);
+	/* Support legacy board-file configuration */
+	if (phydev->dev_flags & MICREL_PHY_50MHZ_CLK) {
+		priv->rmii_ref_clk_sel = true;
+		priv->rmii_ref_clk_sel_val = true;
+	}
+
+	return 0;
 }
 
 static struct phy_driver ksphy_driver[] = {
@@ -601,7 +608,7 @@ static struct phy_driver ksphy_driver[] = {
 			   SUPPORTED_Asym_Pause),
 	.flags		= PHY_HAS_MAGICANEG | PHY_HAS_INTERRUPT,
 	.driver_data	= &ksz8021_type,
-	.probe		= ksz8021_probe,
+	.probe		= kszphy_probe,
 	.config_init	= ksz8021_config_init,
 	.config_aneg	= genphy_config_aneg,
 	.read_status	= genphy_read_status,
@@ -618,7 +625,7 @@ static struct phy_driver ksphy_driver[] = {
 			   SUPPORTED_Asym_Pause),
 	.flags		= PHY_HAS_MAGICANEG | PHY_HAS_INTERRUPT,
 	.driver_data	= &ksz8021_type,
-	.probe		= ksz8021_probe,
+	.probe		= kszphy_probe,
 	.config_init	= ksz8021_config_init,
 	.config_aneg	= genphy_config_aneg,
 	.read_status	= genphy_read_status,
@@ -670,7 +677,7 @@ static struct phy_driver ksphy_driver[] = {
 	.flags		= PHY_HAS_MAGICANEG | PHY_HAS_INTERRUPT,
 	.driver_data	= &ksz8051_type,
 	.probe		= kszphy_probe,
-	.config_init	= ks8051_config_init,
+	.config_init	= kszphy_config_init,
 	.config_aneg	= genphy_config_aneg,
 	.read_status	= genphy_read_status,
 	.ack_interrupt	= kszphy_ack_interrupt,
