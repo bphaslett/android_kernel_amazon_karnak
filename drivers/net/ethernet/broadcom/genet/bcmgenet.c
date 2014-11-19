@@ -614,6 +614,9 @@ static const struct bcmgenet_stats bcmgenet_gstrings_stats[] = {
 	STAT_GENET_MISC("rbuf_err_cnt", mib.rbuf_err_cnt,
 			UMAC_RBUF_ERR_CNT_V1),
 	STAT_GENET_MISC("mdf_err_cnt", mib.mdf_err_cnt, UMAC_MDF_ERR_CNT),
+	STAT_GENET_MIB_RX("alloc_rx_buff_failed", mib.alloc_rx_buff_failed),
+	STAT_GENET_MIB_RX("rx_dma_failed", mib.rx_dma_failed),
+	STAT_GENET_MIB_TX("tx_dma_failed", mib.tx_dma_failed),
 };
 
 #define BCMGENET_STATS_LEN	ARRAY_SIZE(bcmgenet_gstrings_stats)
@@ -1062,6 +1065,7 @@ static int bcmgenet_xmit_single(struct net_device *dev,
 	mapping = dma_map_single(kdev, skb->data, skb_len, DMA_TO_DEVICE);
 	ret = dma_mapping_error(kdev, mapping);
 	if (ret) {
+		priv->mib.tx_dma_failed++;
 		netif_err(priv, tx_err, dev, "Tx DMA map failed\n");
 		dev_kfree_skb(skb);
 		return ret;
@@ -1108,6 +1112,7 @@ static int bcmgenet_xmit_frag(struct net_device *dev,
 				   skb_frag_size(frag), DMA_TO_DEVICE);
 	ret = dma_mapping_error(kdev, mapping);
 	if (ret) {
+		priv->mib.tx_dma_failed++;
 		netif_err(priv, tx_err, dev, "%s: Tx DMA map failed\n",
 			  __func__);
 		return ret;
@@ -1302,6 +1307,7 @@ static int bcmgenet_rx_refill(struct bcmgenet_priv *priv, struct enet_cb *cb)
 				 priv->rx_buf_len, DMA_FROM_DEVICE);
 	ret = dma_mapping_error(kdev, mapping);
 	if (ret) {
+		priv->mib.rx_dma_failed++;
 		bcmgenet_free_cb(cb);
 		netif_err(priv, rx_err, priv->dev,
 			  "%s DMA map failed\n", __func__);
@@ -1468,8 +1474,10 @@ static unsigned int bcmgenet_desc_rx(struct bcmgenet_priv *priv,
 		/* refill RX path on the current control block */
 refill:
 		err = bcmgenet_rx_refill(priv, cb);
-		if (err)
+		if (err) {
+			priv->mib.alloc_rx_buff_failed++;
 			netif_err(priv, rx_err, dev, "Rx refill failed\n");
+		}
 
 		rxpktprocessed++;
 		priv->rx_read_ptr++;
