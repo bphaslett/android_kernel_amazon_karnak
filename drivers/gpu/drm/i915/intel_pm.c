@@ -4749,8 +4749,6 @@ static void gen8_enable_rps(struct drm_device *dev)
 
 	gen6_set_rps(dev, (I915_READ(GEN6_GT_PERF_STATUS) & 0xff00) >> 8);
 
-	gen6_enable_rps_interrupts(dev);
-
 	gen6_gt_force_wake_put(dev_priv, FORCEWAKE_ALL);
 }
 
@@ -4846,8 +4844,6 @@ static void gen6_enable_rps(struct drm_device *dev)
 
 	dev_priv->rps.power = HIGH_POWER; /* force a reset */
 	gen6_set_rps(dev_priv->dev, dev_priv->rps.min_freq_softlimit);
-
-	gen6_enable_rps_interrupts(dev);
 
 	rc6vids = 0;
 	ret = sandybridge_pcode_read(dev_priv, GEN6_PCODE_READ_RC6VIDS, &rc6vids);
@@ -5350,8 +5346,6 @@ static void cherryview_enable_rps(struct drm_device *dev)
 
 	valleyview_set_rps(dev_priv->dev, dev_priv->rps.efficient_freq);
 
-	gen6_enable_rps_interrupts(dev);
-
 	gen6_gt_force_wake_put(dev_priv, FORCEWAKE_ALL);
 }
 
@@ -5432,8 +5426,6 @@ static void valleyview_enable_rps(struct drm_device *dev)
 			 dev_priv->rps.efficient_freq);
 
 	valleyview_set_rps(dev_priv->dev, dev_priv->rps.efficient_freq);
-
-	gen6_enable_rps_interrupts(dev);
 
 	gen6_gt_force_wake_put(dev_priv, FORCEWAKE_ALL);
 }
@@ -6248,6 +6240,13 @@ static void intel_gen6_powersave_work(struct work_struct *work)
 
 	mutex_lock(&dev_priv->rps.hw_lock);
 
+	/*
+	 * TODO: reset/enable RPS interrupts on GEN9+ too, once RPS support is
+	 * added for it.
+	 */
+	if (INTEL_INFO(dev)->gen < 9)
+		gen6_reset_rps_interrupts(dev);
+
 	if (IS_CHERRYVIEW(dev)) {
 		cherryview_enable_rps(dev);
 	} else if (IS_VALLEYVIEW(dev)) {
@@ -6262,6 +6261,10 @@ static void intel_gen6_powersave_work(struct work_struct *work)
 		__gen6_update_ring_freq(dev);
 	}
 	dev_priv->rps.enabled = true;
+
+	if (INTEL_INFO(dev)->gen < 9)
+		gen6_enable_rps_interrupts(dev);
+
 	mutex_unlock(&dev_priv->rps.hw_lock);
 
 	intel_runtime_pm_put(dev_priv);
