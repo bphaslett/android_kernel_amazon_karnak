@@ -1009,21 +1009,12 @@ static struct usb_endpoint_descriptor usba_ep0_desc = {
 	.bInterval = 1,
 };
 
-static void nop_release(struct device *dev)
-{
-
-}
-
 static struct usba_udc the_udc = {
 	.gadget	= {
 		.ops		= &usba_udc_ops,
 		.ep_list	= LIST_HEAD_INIT(the_udc.gadget.ep_list),
 		.max_speed	= USB_SPEED_HIGH,
 		.name		= "atmel_usba_udc",
-		.dev	= {
-			.init_name	= "gadget",
-			.release	= nop_release,
-		},
 	},
 };
 
