@@ -1093,7 +1093,7 @@ svc_process_common(struct svc_rqst *rqstp, struct kvec *argv, struct kvec *resv)
 	rqstp->rq_splice_ok = true;
 	/* Will be turned off only when NFSv4 Sessions are used */
 	set_bit(RQ_USEDEFERRAL, &rqstp->rq_flags);
-	rqstp->rq_dropme = false;
+	clear_bit(RQ_DROPME, &rqstp->rq_flags);
 
 	/* Setup reply header */
 	if (rqstp->rq_prot == IPPROTO_TCP)
@@ -1195,7 +1195,7 @@ svc_process_common(struct svc_rqst *rqstp, struct kvec *argv, struct kvec *resv)
 		*statp = procp->pc_func(rqstp, rqstp->rq_argp, rqstp->rq_resp);
 
 		/* Encode reply */
-		if (rqstp->rq_dropme) {
+		if (test_bit(RQ_DROPME, &rqstp->rq_flags)) {
 			if (procp->pc_release)
 				procp->pc_release(rqstp, NULL, rqstp->rq_resp);
 			goto dropit;
