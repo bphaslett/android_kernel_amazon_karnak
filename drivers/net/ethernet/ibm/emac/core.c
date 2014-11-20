@@ -2341,16 +2341,11 @@ static int emac_check_deps(struct emac_instance *dev,
 
 static void emac_put_deps(struct emac_instance *dev)
 {
-	if (dev->mal_dev)
-		of_dev_put(dev->mal_dev);
-	if (dev->zmii_dev)
-		of_dev_put(dev->zmii_dev);
-	if (dev->rgmii_dev)
-		of_dev_put(dev->rgmii_dev);
-	if (dev->mdio_dev)
-		of_dev_put(dev->mdio_dev);
-	if (dev->tah_dev)
-		of_dev_put(dev->tah_dev);
+	of_dev_put(dev->mal_dev);
+	of_dev_put(dev->zmii_dev);
+	of_dev_put(dev->rgmii_dev);
+	of_dev_put(dev->mdio_dev);
+	of_dev_put(dev->tah_dev);
 }
 
 static int emac_of_bus_notify(struct notifier_block *nb, unsigned long action,
@@ -2389,8 +2384,7 @@ static int emac_wait_deps(struct emac_instance *dev)
 	bus_unregister_notifier(&platform_bus_type, &emac_of_bus_notifier);
 	err = emac_check_deps(dev, deps) ? 0 : -ENODEV;
 	for (i = 0; i < EMAC_DEP_COUNT; i++) {
-		if (deps[i].node)
-			of_node_put(deps[i].node);
+		of_node_put(deps[i].node);
 		if (err && deps[i].ofdev)
 			of_dev_put(deps[i].ofdev);
 	}
@@ -2401,8 +2395,7 @@ static int emac_wait_deps(struct emac_instance *dev)
 		dev->tah_dev = deps[EMAC_DEP_TAH_IDX].ofdev;
 		dev->mdio_dev = deps[EMAC_DEP_MDIO_IDX].ofdev;
 	}
-	if (deps[EMAC_DEP_PREV_IDX].ofdev)
-		of_dev_put(deps[EMAC_DEP_PREV_IDX].ofdev);
+	of_dev_put(deps[EMAC_DEP_PREV_IDX].ofdev);
 	return err;
 }
 
@@ -3130,8 +3123,7 @@ static void __exit emac_exit(void)
 
 	/* Destroy EMAC boot list */
 	for (i = 0; i < EMAC_BOOT_LIST_SIZE; i++)
-		if (emac_boot_list[i])
-			of_node_put(emac_boot_list[i]);
+		of_node_put(emac_boot_list[i]);
 }
 
 module_init(emac_init);
