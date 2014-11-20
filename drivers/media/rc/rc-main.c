@@ -1295,8 +1295,7 @@ void rc_free_device(struct rc_dev *dev)
 	if (!dev)
 		return;
 
-	if (dev->input_dev)
-		input_free_device(dev->input_dev);
+	input_free_device(dev->input_dev);
 
 	put_device(&dev->dev);
 
