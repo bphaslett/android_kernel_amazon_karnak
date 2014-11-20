@@ -651,7 +651,7 @@ err_unmap:
 	mlx5_ib_db_unmap_user(context, &qp->db);
 
 err_free:
-	mlx5_vfree(*in);
+	kvfree(*in);
 
 err_umem:
 	if (qp->umem)
@@ -765,7 +765,7 @@ err_wrid:
 	kfree(qp->rq.wrid);
 
 err_free:
-	mlx5_vfree(*in);
+	kvfree(*in);
 
 err_buf:
 	mlx5_buf_free(dev->mdev, &qp->buf);
@@ -975,7 +975,7 @@ static int create_qp_common(struct mlx5_ib_dev *dev, struct ib_pd *pd,
 		goto err_create;
 	}
 
-	mlx5_vfree(in);
+	kvfree(in);
 	/* Hardware wants QPN written in big-endian order (after
 	 * shifting) for send doorbell.  Precompute this value to save
 	 * a little bit when posting sends.
@@ -992,7 +992,7 @@ err_create:
 	else if (qp->create_type == MLX5_QP_KERNEL)
 		destroy_qp_kernel(dev, qp);
 
-	mlx5_vfree(in);
+	kvfree(in);
 	return err;
 }
 
