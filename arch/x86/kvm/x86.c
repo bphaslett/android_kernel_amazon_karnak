@@ -4079,7 +4079,7 @@ long kvm_arch_vm_ioctl(struct file *filp,
 	}
 
 	default:
-		;
+		r = kvm_vm_ioctl_assigned_device(kvm, ioctl, arg);
 	}
 out:
 	return r;
