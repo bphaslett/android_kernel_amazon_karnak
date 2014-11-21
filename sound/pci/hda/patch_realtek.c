@@ -3406,8 +3406,8 @@ static void alc286_fixup_hp_gpio_led(struct hda_codec *codec,
 		spec->gen.cap_sync_hook = alc_fixup_gpio_mic_mute_hook;
 		spec->gpio_led = 0;
 		spec->mute_led_polarity = 0;
-		spec->gpio_mute_led_mask = 0x08;
-		spec->gpio_mic_led_mask = 0x10;
+		spec->gpio_mute_led_mask = 0x02;
+		spec->gpio_mic_led_mask = 0x20;
 		snd_hda_add_verbs(codec, gpio_init);
 	}
 }
