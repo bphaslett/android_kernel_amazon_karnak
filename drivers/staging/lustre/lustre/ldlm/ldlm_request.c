@@ -137,6 +137,7 @@ EXPORT_SYMBOL(ldlm_expired_completion_wait);
 int ldlm_get_enq_timeout(struct ldlm_lock *lock)
 {
 	int timeout = at_get(ldlm_lock_to_ns_at(lock));
+
 	if (AT_OFF)
 		return obd_timeout / 2;
 	/* Since these are non-updating timeouts, we should be conservative.
@@ -608,6 +609,7 @@ int ldlm_cli_enqueue_fini(struct obd_export *exp, struct ptlrpc_request *req,
 	 * again. */
 	if ((*flags) & LDLM_FL_LOCK_CHANGED) {
 		int newmode = reply->lock_desc.l_req_mode;
+
 		LASSERT(!is_replay);
 		if (newmode && newmode != lock->l_req_mode) {
 			LDLM_DEBUG(lock, "server returned different mode %s",
@@ -676,6 +678,7 @@ int ldlm_cli_enqueue_fini(struct obd_export *exp, struct ptlrpc_request *req,
 		rc = ldlm_lock_enqueue(ns, &lock, NULL, flags);
 		if (lock->l_completion_ast != NULL) {
 			int err = lock->l_completion_ast(lock, *flags, NULL);
+
 			if (!rc)
 				rc = err;
 			if (rc)
@@ -725,6 +728,7 @@ static inline int ldlm_capsule_handles_avail(struct req_capsule *pill,
 					     int off)
 {
 	int size = req_capsule_msg_size(pill, loc);
+
 	return ldlm_req_handles_avail(size, off);
 }
 
@@ -733,6 +737,7 @@ static inline int ldlm_format_handles_avail(struct obd_import *imp,
 					    enum req_location loc, int off)
 {
 	int size = req_capsule_fmt_size(imp->imp_msg_magic, fmt, loc);
+
 	return ldlm_req_handles_avail(size, off);
 }
 
@@ -1416,6 +1421,7 @@ static ldlm_policy_res_t ldlm_cancel_no_wait_policy(struct ldlm_namespace *ns,
 {
 	ldlm_policy_res_t result = LDLM_POLICY_CANCEL_LOCK;
 	ldlm_cancel_for_recovery cb = ns->ns_cancel_for_recovery;
+
 	lock_res_and_lock(lock);
 
 	/* don't check added & count since we want to process all locks
@@ -1730,6 +1736,7 @@ int ldlm_cancel_lru_local(struct ldlm_namespace *ns, struct list_head *cancels,
 			  int flags)
 {
 	int added;
+
 	added = ldlm_prepare_lru_list(ns, cancels, count, max, flags);
 	if (added <= 0)
 		return added;
@@ -2014,6 +2021,7 @@ struct iter_helper_data {
 static int ldlm_iter_helper(struct ldlm_lock *lock, void *closure)
 {
 	struct iter_helper_data *helper = closure;
+
 	return helper->iter(lock, helper->closure);
 }
 
