@@ -622,6 +622,7 @@ struct mlx4_en_priv {
 	__be16 vxlan_port;
 
 	u32 pflags;
+	u8 rss_key[MLX4_EN_RSS_KEY_SIZE];
 };
 
 enum mlx4_en_wol {
