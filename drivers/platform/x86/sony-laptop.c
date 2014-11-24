@@ -3140,8 +3140,7 @@ static void sony_nc_backlight_setup(void)
 
 static void sony_nc_backlight_cleanup(void)
 {
-	if (sony_bl_props.dev)
-		backlight_device_unregister(sony_bl_props.dev);
+	backlight_device_unregister(sony_bl_props.dev);
 }
 
 static int sony_nc_add(struct acpi_device *device)
