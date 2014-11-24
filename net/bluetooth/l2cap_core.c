@@ -2104,7 +2104,7 @@ static inline int l2cap_skbuff_fromiovec(struct l2cap_chan *chan,
 	int sent = 0;
 
 	if (chan->ops->memcpy_fromiovec(chan, skb_put(skb, count),
-					msg->msg_iov, count))
+					msg, count))
 		return -EFAULT;
 
 	sent += count;
@@ -2125,7 +2125,7 @@ static inline int l2cap_skbuff_fromiovec(struct l2cap_chan *chan,
 		*frag = tmp;
 
 		if (chan->ops->memcpy_fromiovec(chan, skb_put(*frag, count),
-						msg->msg_iov, count))
+						msg, count))
 			return -EFAULT;
 
 		sent += count;
