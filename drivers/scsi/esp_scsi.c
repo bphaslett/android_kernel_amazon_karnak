@@ -982,7 +982,6 @@ static int esp_check_spur_intr(struct esp *esp)
 
 	default:
 		if (!(esp->sreg & ESP_STAT_INTR)) {
-			esp->ireg = esp_read8(ESP_INTRPT);
 			if (esp->ireg & ESP_INTR_SR)
 				return 1;
 
@@ -2057,7 +2056,12 @@ static void __esp_interrupt(struct esp *esp)
 	int finish_reset, intr_done;
 	u8 phase;
 
+       /*
+	* Once INTRPT is read STATUS and SSTEP are cleared.
+	*/
 	esp->sreg = esp_read8(ESP_STATUS);
+	esp->seqreg = esp_read8(ESP_SSTEP);
+	esp->ireg = esp_read8(ESP_INTRPT);
 
 	if (esp->flags & ESP_FLAG_RESETTING) {
 		finish_reset = 1;
@@ -2069,8 +2073,6 @@ static void __esp_interrupt(struct esp *esp)
 		if (finish_reset < 0)
 			return;
 	}
-
-	esp->ireg = esp_read8(ESP_INTRPT);
 
 	if (esp->ireg & ESP_INTR_SR)
 		finish_reset = 1;
