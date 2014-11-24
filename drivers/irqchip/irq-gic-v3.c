@@ -782,7 +782,6 @@ static int __init gic_of_init(struct device_node *node,
 	struct redist_region *rdist_regs;
 	void __iomem *pol_base;
 	struct resource res;
-
 	u64 redist_stride;
 	u32 nr_redist_regions;
 	u32 typer;
@@ -806,12 +805,11 @@ static int __init gic_of_init(struct device_node *node,
 		goto out_unmap_dist;
 	}
 
-	if (of_property_read_u32(node,
-		"#redistributor-regions", &nr_redist_regions))
+	if (of_property_read_u32(node, "#redistributor-regions", &nr_redist_regions))
 		nr_redist_regions = 1;
 
-	rdist_regs = kcalloc(nr_redist_regions, sizeof(*redist_base), GFP_KERNEL);
-	if (!redist_base) {
+	rdist_regs = kzalloc(sizeof(*rdist_regs) * nr_redist_regions, GFP_KERNEL);
+	if (!rdist_regs) {
 		err = -ENOMEM;
 		goto out_unmap_dist;
 	}
@@ -831,10 +829,10 @@ static int __init gic_of_init(struct device_node *node,
 		rdist_regs[i].phys_base = res.start;
 	}
 
-	pol_base = of_iomap(node, redist_regions+1);
+	pol_base = of_iomap(node, nr_redist_regions+1);
 	WARN(!pol_base, "unable to map pol registers\n");
 	INT_POL_CTL_REG = pol_base;
-	if (of_address_to_resource(node, redist_regions+1, &res))
+	if (of_address_to_resource(node, nr_redist_regions+1, &res))
 		WARN(!pol_base, "unable to map pol registers\n");
 
 	INT_POL_CTL_phys = res.start;
