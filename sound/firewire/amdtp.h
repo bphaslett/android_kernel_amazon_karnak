@@ -154,9 +154,6 @@ struct amdtp_stream {
 	/* quirk: indicate the value of dbc field in a first packet. */
 	unsigned int tx_first_dbc;
 
-	/* quirk: the first count of data blocks in an rx packet for MIDI */
-	unsigned int rx_blocks_for_midi;
-
 	bool callbacked;
 	wait_queue_head_t callback_wait;
 	struct amdtp_stream *sync_slave;
