@@ -353,8 +353,7 @@ static void oz_complete_urb(struct usb_hcd *hcd, struct urb *urb,
 	}
 	spin_lock(&g_tasklet_lock);
 	spin_unlock_irqrestore(&g_tasklet_lock, irq_state);
-	if (cancel_urbl)
-		oz_free_urb_link(cancel_urbl);
+	oz_free_urb_link(cancel_urbl);
 }
 
 /*
@@ -522,8 +521,7 @@ static int oz_dequeue_ep_urb(struct oz_port *port, u8 ep_addr, int in_dir,
 		}
 	}
 	spin_unlock_bh(&port->ozhcd->hcd_lock);
-	if (urbl)
-		oz_free_urb_link(urbl);
+	oz_free_urb_link(urbl);
 	return urbl ? 0 : -EIDRM;
 }
 
