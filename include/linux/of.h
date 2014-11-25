@@ -995,14 +995,14 @@ static inline int of_reconfig_get_state_change(unsigned long action,
 extern int of_resolve_phandles(struct device_node *tree);
 
 /**
- * of_system_has_poweroff_source - Tells if poweroff-source is found for device_node
+ * of_device_is_system_power_controller - Tells if system-power-controller is found for device_node
  * @np: Pointer to the given device_node
  *
  * return true if present false otherwise
  */
-static inline bool of_system_has_poweroff_source(const struct device_node *np)
+static inline bool of_device_is_system_power_controller(const struct device_node *np)
 {
-	return of_property_read_bool(np, "poweroff-source");
+	return of_property_read_bool(np, "system-power-controller");
 }
 
 /**
