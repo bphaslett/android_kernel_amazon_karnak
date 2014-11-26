@@ -320,6 +320,7 @@ config SPI_MT65XX
 config SPI_MESON_SPIFC
 	tristate "Amlogic Meson SPIFC controller"
 	depends on ARCH_MESON || COMPILE_TEST
+	select REGMAP_MMIO
 	help
 	  This enables master mode support for the SPIFC (SPI flash
 	  controller) available in Amlogic Meson SoCs.
