@@ -56,6 +56,16 @@ struct brcmstb_gisb_arb_device {
 
 static LIST_HEAD(brcmstb_gisb_arb_device_list);
 
+static u32 gisb_read(struct brcmstb_gisb_arb_device *gdev, int reg)
+{
+	return ioread32(gdev->base + reg);
+}
+
+static void gisb_write(struct brcmstb_gisb_arb_device *gdev, u32 val, int reg)
+{
+	iowrite32(val, gdev->base + reg);
+}
+
 static ssize_t gisb_arb_get_timeout(struct device *dev,
 				    struct device_attribute *attr,
 				    char *buf)
@@ -65,7 +75,7 @@ static ssize_t gisb_arb_get_timeout(struct device *dev,
 	u32 timeout;
 
 	mutex_lock(&gdev->lock);
-	timeout = ioread32(gdev->base + ARB_TIMER);
+	timeout = gisb_read(gdev, ARB_TIMER);
 	mutex_unlock(&gdev->lock);
 
 	return sprintf(buf, "%d", timeout);
@@ -87,7 +97,7 @@ static ssize_t gisb_arb_set_timeout(struct device *dev,
 		return -EINVAL;
 
 	mutex_lock(&gdev->lock);
-	iowrite32(val, gdev->base + ARB_TIMER);
+	gisb_write(gdev, val, ARB_TIMER);
 	mutex_unlock(&gdev->lock);
 
 	return count;
@@ -114,18 +124,18 @@ static int brcmstb_gisb_arb_decode_addr(struct brcmstb_gisb_arb_device *gdev,
 	const char *m_name;
 	char m_fmt[11];
 
-	cap_status = ioread32(gdev->base + ARB_ERR_CAP_STATUS);
+	cap_status = gisb_read(gdev, ARB_ERR_CAP_STATUS);
 
 	/* Invalid captured address, bail out */
 	if (!(cap_status & ARB_ERR_CAP_STATUS_VALID))
 		return 1;
 
 	/* Read the address and master */
-	arb_addr = ioread32(gdev->base + ARB_ERR_CAP_ADDR) & 0xffffffff;
+	arb_addr = gisb_read(gdev, ARB_ERR_CAP_ADDR) & 0xffffffff;
 #if (IS_ENABLED(CONFIG_PHYS_ADDR_T_64BIT))
-	arb_addr |= (u64)ioread32(gdev->base + ARB_ERR_CAP_HI_ADDR) << 32;
+	arb_addr |= (u64)gisb_read(gdev, ARB_ERR_CAP_HI_ADDR) << 32;
 #endif
-	master = ioread32(gdev->base + ARB_ERR_CAP_MASTER);
+	master = gisb_read(gdev, ARB_ERR_CAP_MASTER);
 
 	m_name = brcmstb_gisb_master_to_str(gdev, master);
 	if (!m_name) {
@@ -140,7 +150,7 @@ static int brcmstb_gisb_arb_decode_addr(struct brcmstb_gisb_arb_device *gdev,
 		m_name);
 
 	/* clear the GISB error */
-	iowrite32(ARB_ERR_CAP_CLEAR, gdev->base + ARB_ERR_CAP_CLR);
+	gisb_write(gdev, ARB_ERR_CAP_CLEAR, ARB_ERR_CAP_CLR);
 
 	return 0;
 }
