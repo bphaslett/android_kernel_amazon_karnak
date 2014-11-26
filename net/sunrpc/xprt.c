@@ -1310,6 +1310,7 @@ static void xprt_init(struct rpc_xprt *xprt, struct net *net)
  */
 struct rpc_xprt *xprt_create_transport(struct xprt_create *args)
 {
+	int err;
 	struct rpc_xprt	*xprt;
 	struct xprt_class *t;
 
@@ -1350,6 +1351,12 @@ found:
 		return ERR_PTR(-ENOMEM);
 	}
 
+	err = rpc_xprt_debugfs_register(xprt);
+	if (err) {
+		xprt_destroy(xprt);
+		return ERR_PTR(err);
+	}
+
 	dprintk("RPC:       created transport %p with %u slots\n", xprt,
 			xprt->max_reqs);
 out:
@@ -1366,6 +1373,7 @@ static void xprt_destroy(struct rpc_xprt *xprt)
 	dprintk("RPC:       destroying transport %p\n", xprt);
 	del_timer_sync(&xprt->timer);
 
+	rpc_xprt_debugfs_unregister(xprt);
 	rpc_destroy_wait_queue(&xprt->binding);
 	rpc_destroy_wait_queue(&xprt->pending);
 	rpc_destroy_wait_queue(&xprt->sending);
