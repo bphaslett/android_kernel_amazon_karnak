@@ -805,11 +805,11 @@ static void radeon_vm_frag_ptes(struct radeon_device *rdev,
  *
  * Global and local mutex must be locked!
  */
-static void radeon_vm_update_ptes(struct radeon_device *rdev,
-				  struct radeon_vm *vm,
-				  struct radeon_ib *ib,
-				  uint64_t start, uint64_t end,
-				  uint64_t dst, uint32_t flags)
+static int radeon_vm_update_ptes(struct radeon_device *rdev,
+				 struct radeon_vm *vm,
+				 struct radeon_ib *ib,
+				 uint64_t start, uint64_t end,
+				 uint64_t dst, uint32_t flags)
 {
 	uint64_t mask = RADEON_VM_PTE_COUNT - 1;
 	uint64_t last_pte = ~0, last_dst = ~0;
@@ -822,8 +822,12 @@ static void radeon_vm_update_ptes(struct radeon_device *rdev,
 		struct radeon_bo *pt = vm->page_tables[pt_idx].bo;
 		unsigned nptes;
 		uint64_t pte;
+		int r;
 
 		radeon_sync_resv(rdev, &ib->sync, pt->tbo.resv, true);
+		r = reservation_object_reserve_shared(pt->tbo.resv);
+		if (r)
+			return r;
 
 		if ((addr & ~mask) == (end & ~mask))
 			nptes = end - addr;
@@ -857,6 +861,8 @@ static void radeon_vm_update_ptes(struct radeon_device *rdev,
 				    last_pte + 8 * count,
 				    last_dst, flags);
 	}
+
+	return 0;
 }
 
 /**
@@ -881,7 +887,7 @@ static void radeon_vm_fence_pts(struct radeon_vm *vm,
 	end = (end - 1) >> radeon_vm_block_size;
 
 	for (i = start; i <= end; ++i)
-		radeon_bo_fence(vm->page_tables[i].bo, fence, false);
+		radeon_bo_fence(vm->page_tables[i].bo, fence, true);
 }
 
 /**
@@ -990,9 +996,13 @@ int radeon_vm_bo_update(struct radeon_device *rdev,
 			radeon_sync_fence(&ib.sync, vm->ids[i].last_id_use);
 	}
 
-	radeon_vm_update_ptes(rdev, vm, &ib, bo_va->it.start,
-			      bo_va->it.last + 1, addr,
-			      radeon_vm_page_flags(bo_va->flags));
+	r = radeon_vm_update_ptes(rdev, vm, &ib, bo_va->it.start,
+				  bo_va->it.last + 1, addr,
+				  radeon_vm_page_flags(bo_va->flags));
+	if (r) {
+		radeon_ib_free(rdev, &ib);
+		return r;
+	}
 
 	radeon_asic_vm_pad_ib(rdev, &ib);
 	WARN_ON(ib.length_dw > ndw);
