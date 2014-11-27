@@ -25,7 +25,6 @@
 #include <asm/mach/map.h>
 #include <asm/mach/irq.h>
 
-#include "at91_aic.h"
 #include "generic.h"
 
 static int ksz8081_phy_fixup(struct phy_device *phy)
