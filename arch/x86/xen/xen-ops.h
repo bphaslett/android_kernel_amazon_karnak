@@ -29,11 +29,12 @@ void xen_build_mfn_list_list(void);
 void xen_setup_machphys_mapping(void);
 void xen_setup_kernel_pagetable(pgd_t *pgd, unsigned long max_pfn);
 void xen_reserve_top(void);
-extern unsigned long xen_max_p2m_pfn;
 
 void xen_mm_pin_all(void);
 void xen_mm_unpin_all(void);
 
+unsigned long __ref xen_chk_extra_mem(unsigned long pfn);
+void __init xen_inv_extra_mem(void);
 void __init xen_remap_memory(void);
 char * __init xen_memory_setup(void);
 char * xen_auto_xlated_memory_setup(void);
