@@ -1478,6 +1478,12 @@ enum netdev_priv_flags {
  *	@group:		The group, that the device belongs to
  *	@pm_qos_req:	Power Management QoS object
  *
+ * int (*ndo_switch_parent_id_get)(struct net_device *dev,
+ *				   struct netdev_phys_item_id *psid);
+ *	Called to get an ID of the switch chip this port is part of.
+ *	If driver implements this, it indicates that it represents a port
+ *	of a switch chip.
+
  *	FIXME: cleanup struct net_device such that network protocol info
  *	moves out.
  */
@@ -1731,6 +1737,10 @@ struct net_device {
 	struct lock_class_key *qdisc_tx_busylock;
 	int group;
 	struct pm_qos_request	pm_qos_req;
+#ifdef CONFIG_NET_SWITCHDEV
+	int			(*ndo_switch_parent_id_get)(struct net_device *dev,
+							    struct netdev_phys_item_id *psid);
+#endif
 };
 #define to_net_dev(d) container_of(d, struct net_device, dev)
 
