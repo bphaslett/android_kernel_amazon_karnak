@@ -391,6 +391,10 @@ static int stub_probe(struct usb_device *udev)
 	rc = 0;
 	goto call_put_busid_priv;
 
+	return 0;
+call_put_busid_priv:
+	put_busid_priv(busid_priv);
+	return rc;
 err_files:
 	usb_hub_release_port(udev->parent, udev->portnum,
 			     (struct usb_dev_state *) udev);
@@ -401,9 +405,6 @@ err_port:
 
 	busid_priv->sdev = NULL;
 	stub_device_free(sdev);
-
-call_put_busid_priv:
-	put_busid_priv(busid_priv);
 	return rc;
 }
 
