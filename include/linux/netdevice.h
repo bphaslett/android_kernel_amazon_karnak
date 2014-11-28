@@ -1026,6 +1026,10 @@ typedef u16 (*select_queue_fallback_t)(struct net_device *dev,
  *	be otherwise expressed by feature flags. The check is called with
  *	the set of features that the stack has calculated and it returns
  *	those the driver believes to be appropriate.
+
+ * int (*ndo_switch_port_stp_update)(struct net_device *dev, u8 state);
+ *	Called to notify switch device port of bridge port STP
+ *	state change.
  */
 struct net_device_ops {
 	int			(*ndo_init)(struct net_device *dev);
@@ -1183,6 +1187,8 @@ struct net_device_ops {
 	netdev_features_t	(*ndo_features_check) (struct sk_buff *skb,
 						       struct net_device *dev,
 						       netdev_features_t features);
+	int			(*ndo_switch_port_stp_update)(struct net_device *dev,
+							      u8 state);
 };
 
 /**
