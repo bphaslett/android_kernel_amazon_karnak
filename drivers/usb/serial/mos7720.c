@@ -1304,8 +1304,6 @@ static void mos7720_throttle(struct tty_struct *tty)
 		mos7720_port->shadowMCR &= ~UART_MCR_RTS;
 		write_mos_reg(port->serial, port->port_number, MCR,
 			      mos7720_port->shadowMCR);
-		if (status != 0)
-			return;
 	}
 }
 
@@ -1336,8 +1334,6 @@ static void mos7720_unthrottle(struct tty_struct *tty)
 		mos7720_port->shadowMCR |= UART_MCR_RTS;
 		write_mos_reg(port->serial, port->port_number, MCR,
 			      mos7720_port->shadowMCR);
-		if (status != 0)
-			return;
 	}
 }
 
