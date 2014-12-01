@@ -288,7 +288,7 @@ static int __must_check __deliver_cpu_timer(struct kvm_vcpu *vcpu)
 	rc |= read_guest_lc(vcpu, __LC_EXT_NEW_PSW,
 			    &vcpu->arch.sie_block->gpsw, sizeof(psw_t));
 	clear_bit(IRQ_PEND_EXT_CPU_TIMER, &li->pending_irqs);
-	return rc;
+	return rc ? -EFAULT : 0;
 }
 
 static int __must_check __deliver_ckc(struct kvm_vcpu *vcpu)
@@ -307,7 +307,7 @@ static int __must_check __deliver_ckc(struct kvm_vcpu *vcpu)
 	rc |= read_guest_lc(vcpu, __LC_EXT_NEW_PSW,
 			    &vcpu->arch.sie_block->gpsw, sizeof(psw_t));
 	clear_bit(IRQ_PEND_EXT_CLOCK_COMP, &li->pending_irqs);
-	return rc;
+	return rc ? -EFAULT : 0;
 }
 
 static int __must_check __deliver_pfault_init(struct kvm_vcpu *vcpu)
@@ -335,7 +335,7 @@ static int __must_check __deliver_pfault_init(struct kvm_vcpu *vcpu)
 	rc |= read_guest_lc(vcpu, __LC_EXT_NEW_PSW,
 			    &vcpu->arch.sie_block->gpsw, sizeof(psw_t));
 	rc |= put_guest_lc(vcpu, ext.ext_params2, (u64 *) __LC_EXT_PARAMS2);
-	return rc;
+	return rc ? -EFAULT : 0;
 }
 
 static int __must_check __deliver_machine_check(struct kvm_vcpu *vcpu)
@@ -372,7 +372,7 @@ static int __must_check __deliver_machine_check(struct kvm_vcpu *vcpu)
 			     &vcpu->arch.sie_block->gpsw, sizeof(psw_t));
 	rc |= read_guest_lc(vcpu, __LC_MCK_NEW_PSW,
 			    &vcpu->arch.sie_block->gpsw, sizeof(psw_t));
-	return rc;
+	return rc ? -EFAULT : 0;
 }
 
 static int __must_check __deliver_restart(struct kvm_vcpu *vcpu)
@@ -390,7 +390,7 @@ static int __must_check __deliver_restart(struct kvm_vcpu *vcpu)
 	rc |= read_guest_lc(vcpu, offsetof(struct _lowcore, restart_psw),
 			    &vcpu->arch.sie_block->gpsw, sizeof(psw_t));
 	clear_bit(IRQ_PEND_RESTART, &li->pending_irqs);
-	return rc;
+	return rc ? -EFAULT : 0;
 }
 
 static int __must_check __deliver_stop(struct kvm_vcpu *vcpu)
@@ -451,7 +451,7 @@ static int __must_check __deliver_emergency_signal(struct kvm_vcpu *vcpu)
 			     &vcpu->arch.sie_block->gpsw, sizeof(psw_t));
 	rc |= read_guest_lc(vcpu, __LC_EXT_NEW_PSW,
 			    &vcpu->arch.sie_block->gpsw, sizeof(psw_t));
-	return rc;
+	return rc ? -EFAULT : 0;
 }
 
 static int __must_check __deliver_external_call(struct kvm_vcpu *vcpu)
@@ -479,7 +479,7 @@ static int __must_check __deliver_external_call(struct kvm_vcpu *vcpu)
 			     &vcpu->arch.sie_block->gpsw, sizeof(psw_t));
 	rc |= read_guest_lc(vcpu, __LC_EXT_NEW_PSW, &vcpu->arch.sie_block->gpsw,
 			    sizeof(psw_t));
-	return rc;
+	return rc ? -EFAULT : 0;
 }
 
 static int __must_check __deliver_prog(struct kvm_vcpu *vcpu)
@@ -573,7 +573,7 @@ static int __must_check __deliver_prog(struct kvm_vcpu *vcpu)
 			     &vcpu->arch.sie_block->gpsw, sizeof(psw_t));
 	rc |= read_guest_lc(vcpu, __LC_PGM_NEW_PSW,
 			    &vcpu->arch.sie_block->gpsw, sizeof(psw_t));
-	return rc;
+	return rc ? -EFAULT : 0;
 }
 
 static int __must_check __deliver_service(struct kvm_vcpu *vcpu,
@@ -595,7 +595,7 @@ static int __must_check __deliver_service(struct kvm_vcpu *vcpu,
 			    &vcpu->arch.sie_block->gpsw, sizeof(psw_t));
 	rc |= put_guest_lc(vcpu, inti->ext.ext_params,
 			   (u32 *)__LC_EXT_PARAMS);
-	return rc;
+	return rc ? -EFAULT : 0;
 }
 
 static int __must_check __deliver_pfault_done(struct kvm_vcpu *vcpu,
@@ -615,7 +615,7 @@ static int __must_check __deliver_pfault_done(struct kvm_vcpu *vcpu,
 			    &vcpu->arch.sie_block->gpsw, sizeof(psw_t));
 	rc |= put_guest_lc(vcpu, inti->ext.ext_params2,
 			   (u64 *)__LC_EXT_PARAMS2);
-	return rc;
+	return rc ? -EFAULT : 0;
 }
 
 static int __must_check __deliver_virtio(struct kvm_vcpu *vcpu,
@@ -640,7 +640,7 @@ static int __must_check __deliver_virtio(struct kvm_vcpu *vcpu,
 			   (u32 *)__LC_EXT_PARAMS);
 	rc |= put_guest_lc(vcpu, inti->ext.ext_params2,
 			   (u64 *)__LC_EXT_PARAMS2);
-	return rc;
+	return rc ? -EFAULT : 0;
 }
 
 static int __must_check __deliver_io(struct kvm_vcpu *vcpu,
@@ -668,7 +668,7 @@ static int __must_check __deliver_io(struct kvm_vcpu *vcpu,
 			     &vcpu->arch.sie_block->gpsw, sizeof(psw_t));
 	rc |= read_guest_lc(vcpu, __LC_IO_NEW_PSW,
 			    &vcpu->arch.sie_block->gpsw, sizeof(psw_t));
-	return rc;
+	return rc ? -EFAULT : 0;
 }
 
 static int __must_check __deliver_mchk_floating(struct kvm_vcpu *vcpu,
@@ -693,7 +693,7 @@ static int __must_check __deliver_mchk_floating(struct kvm_vcpu *vcpu,
 			     &vcpu->arch.sie_block->gpsw, sizeof(psw_t));
 	rc |= read_guest_lc(vcpu, __LC_MCK_NEW_PSW,
 			    &vcpu->arch.sie_block->gpsw, sizeof(psw_t));
-	return rc;
+	return rc ? -EFAULT : 0;
 }
 
 typedef int (*deliver_irq_t)(struct kvm_vcpu *vcpu);
