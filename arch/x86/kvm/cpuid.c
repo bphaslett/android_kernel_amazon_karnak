@@ -55,6 +55,8 @@ u64 kvm_supported_xcr0(void)
 	return xcr0;
 }
 
+#define F(x) bit(X86_FEATURE_##x)
+
 int kvm_update_cpuid(struct kvm_vcpu *vcpu)
 {
 	struct kvm_cpuid_entry2 *best;
@@ -66,13 +68,13 @@ int kvm_update_cpuid(struct kvm_vcpu *vcpu)
 
 	/* Update OSXSAVE bit */
 	if (cpu_has_xsave && best->function == 0x1) {
-		best->ecx &= ~(bit(X86_FEATURE_OSXSAVE));
+		best->ecx &= ~F(OSXSAVE);
 		if (kvm_read_cr4_bits(vcpu, X86_CR4_OSXSAVE))
-			best->ecx |= bit(X86_FEATURE_OSXSAVE);
+			best->ecx |= F(OSXSAVE);
 	}
 
 	if (apic) {
-		if (best->ecx & bit(X86_FEATURE_TSC_DEADLINE_TIMER))
+		if (best->ecx & F(TSC_DEADLINE_TIMER))
 			apic->lapic_timer.timer_mode_mask = 3 << 17;
 		else
 			apic->lapic_timer.timer_mode_mask = 1 << 17;
@@ -126,8 +128,8 @@ static void cpuid_fix_nx_cap(struct kvm_vcpu *vcpu)
 			break;
 		}
 	}
-	if (entry && (entry->edx & bit(X86_FEATURE_NX)) && !is_efer_nx()) {
-		entry->edx &= ~bit(X86_FEATURE_NX);
+	if (entry && (entry->edx & F(NX)) && !is_efer_nx()) {
+		entry->edx &= ~F(NX);
 		printk(KERN_INFO "kvm: guest NX capability removed\n");
 	}
 }
@@ -230,8 +232,6 @@ static void do_cpuid_1_ent(struct kvm_cpuid_entry2 *entry, u32 function,
 		    &entry->eax, &entry->ebx, &entry->ecx, &entry->edx);
 	entry->flags = 0;
 }
-
-#define F(x) bit(X86_FEATURE_##x)
 
 static int __do_cpuid_ent_emulated(struct kvm_cpuid_entry2 *entry,
 				   u32 func, u32 index, int *nent, int maxnent)
