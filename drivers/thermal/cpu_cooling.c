@@ -305,10 +305,9 @@ EXPORT_SYMBOL_GPL(cpufreq_cooling_get_frequency);
 static int cpufreq_apply_cooling(struct cpufreq_cooling_device *cpufreq_device,
 				 unsigned long cooling_state)
 {
-	unsigned int cpuid, clip_freq;
+	unsigned int clip_freq;
 	struct cpumask *mask = &cpufreq_device->allowed_cpus;
 	unsigned int cpu = cpumask_any(mask);
-
 
 	/* Check if the old cooling action is same as new cooling action */
 	if (cpufreq_device->cpufreq_state == cooling_state)
@@ -321,10 +320,8 @@ static int cpufreq_apply_cooling(struct cpufreq_cooling_device *cpufreq_device,
 	cpufreq_device->cpufreq_state = cooling_state;
 	cpufreq_device->cpufreq_val = clip_freq;
 
-	for_each_cpu(cpuid, mask) {
-		if (is_cpufreq_valid(cpuid))
-			cpufreq_update_policy(cpuid);
-	}
+	if (is_cpufreq_valid(cpu))
+		cpufreq_update_policy(cpu);
 
 	return 0;
 }
