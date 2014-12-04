@@ -753,7 +753,7 @@ out_free:
 	return rc;
 }
 
-static void virtio_ccw_finalize_features(struct virtio_device *vdev)
+static int virtio_ccw_finalize_features(struct virtio_device *vdev)
 {
 	struct virtio_ccw_device *vcdev = to_vc_device(vdev);
 	struct virtio_feature_desc *features;
@@ -761,7 +761,7 @@ static void virtio_ccw_finalize_features(struct virtio_device *vdev)
 
 	ccw = kzalloc(sizeof(*ccw), GFP_DMA | GFP_KERNEL);
 	if (!ccw)
-		return;
+		return 0;
 
 	features = kzalloc(sizeof(*features), GFP_DMA | GFP_KERNEL);
 	if (!features)
@@ -794,6 +794,8 @@ static void virtio_ccw_finalize_features(struct virtio_device *vdev)
 out_free:
 	kfree(features);
 	kfree(ccw);
+
+	return 0;
 }
 
 static void virtio_ccw_get_config(struct virtio_device *vdev,
