@@ -1575,6 +1575,28 @@ static umode_t toshiba_sysfs_is_visible(struct kobject *kobj,
 	return exists ? attr->mode : 0;
 }
 
+/*
+ * Hotkeys
+ */
+static int toshiba_acpi_enable_hotkeys(struct toshiba_acpi_dev *dev)
+{
+	acpi_status status;
+	u32 result;
+
+	status = acpi_evaluate_object(dev->acpi_dev->handle,
+				      "ENAB", NULL, NULL);
+	if (ACPI_FAILURE(status))
+		return -ENODEV;
+
+	result = hci_write1(dev, HCI_HOTKEY_EVENT, HCI_HOTKEY_ENABLE);
+	if (result == TOS_FAILURE)
+		return -EIO;
+	else if (result == TOS_NOT_SUPPORTED)
+		return -ENODEV;
+
+	return 0;
+}
+
 static bool toshiba_acpi_i8042_filter(unsigned char data, unsigned char str,
 				      struct serio *port)
 {
@@ -1639,7 +1661,6 @@ static void toshiba_acpi_report_hotkey(struct toshiba_acpi_dev *dev,
 
 static int toshiba_acpi_setup_keyboard(struct toshiba_acpi_dev *dev)
 {
-	acpi_status status;
 	acpi_handle ec_handle;
 	int error;
 	u32 hci_result;
@@ -1666,7 +1687,6 @@ static int toshiba_acpi_setup_keyboard(struct toshiba_acpi_dev *dev)
 	 * supported, so if it's present set up an i8042 key filter
 	 * for this purpose.
 	 */
-	status = AE_ERROR;
 	ec_handle = ec_get_handle();
 	if (ec_handle && acpi_has_method(ec_handle, "NTFY")) {
 		INIT_WORK(&dev->hotkey_work, toshiba_acpi_hotkey_work);
@@ -1697,10 +1717,9 @@ static int toshiba_acpi_setup_keyboard(struct toshiba_acpi_dev *dev)
 		goto err_remove_filter;
 	}
 
-	status = acpi_evaluate_object(dev->acpi_dev->handle, "ENAB", NULL, NULL);
-	if (ACPI_FAILURE(status)) {
+	error = toshiba_acpi_enable_hotkeys(dev);
+	if (error) {
 		pr_info("Unable to enable hotkeys\n");
-		error = -ENODEV;
 		goto err_remove_filter;
 	}
 
@@ -1710,7 +1729,6 @@ static int toshiba_acpi_setup_keyboard(struct toshiba_acpi_dev *dev)
 		goto err_remove_filter;
 	}
 
-	hci_result = hci_write1(dev, HCI_HOTKEY_EVENT, HCI_HOTKEY_ENABLE);
 	return 0;
 
  err_remove_filter:
@@ -2008,16 +2026,12 @@ static int toshiba_acpi_suspend(struct device *device)
 static int toshiba_acpi_resume(struct device *device)
 {
 	struct toshiba_acpi_dev *dev = acpi_driver_data(to_acpi_device(device));
-	u32 result;
-	acpi_status status;
+	int error;
 
 	if (dev->hotkey_dev) {
-		status = acpi_evaluate_object(dev->acpi_dev->handle, "ENAB",
-				NULL, NULL);
-		if (ACPI_FAILURE(status))
+		error = toshiba_acpi_enable_hotkeys(dev);
+		if (error)
 			pr_info("Unable to re-enable hotkeys\n");
-
-		result = hci_write1(dev, HCI_HOTKEY_EVENT, HCI_HOTKEY_ENABLE);
 	}
 
 	return 0;
