@@ -3357,7 +3357,7 @@ static int enqueue_to_backlog(struct sk_buff *skb, int cpu,
 		goto drop;
 	qlen = skb_queue_len(&sd->input_pkt_queue);
 	if (qlen <= netdev_max_backlog && !skb_flow_limit(skb, qlen)) {
-		if (skb_queue_len(&sd->input_pkt_queue)) {
+		if (qlen) {
 enqueue:
 			__skb_queue_tail(&sd->input_pkt_queue, skb);
 			input_queue_tail_incr_save(sd, qtail);
