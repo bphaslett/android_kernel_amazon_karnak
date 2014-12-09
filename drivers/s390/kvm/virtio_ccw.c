@@ -758,6 +758,7 @@ static int virtio_ccw_finalize_features(struct virtio_device *vdev)
 	struct virtio_ccw_device *vcdev = to_vc_device(vdev);
 	struct virtio_feature_desc *features;
 	struct ccw1 *ccw;
+	int ret;
 
 	if (vcdev->revision >= 1 &&
 	    !__virtio_test_bit(vdev, VIRTIO_F_VERSION_1)) {
@@ -768,12 +769,13 @@ static int virtio_ccw_finalize_features(struct virtio_device *vdev)
 
 	ccw = kzalloc(sizeof(*ccw), GFP_DMA | GFP_KERNEL);
 	if (!ccw)
-		return 0;
+		return -ENOMEM;
 
 	features = kzalloc(sizeof(*features), GFP_DMA | GFP_KERNEL);
-	if (!features)
+	if (!features) {
+		ret = -ENOMEM;
 		goto out_free;
-
+	}
 	/* Give virtio_ring a chance to accept features. */
 	vring_transport_features(vdev);
 
@@ -784,7 +786,9 @@ static int virtio_ccw_finalize_features(struct virtio_device *vdev)
 	ccw->flags = 0;
 	ccw->count = sizeof(*features);
 	ccw->cda = (__u32)(unsigned long)features;
-	ccw_io_helper(vcdev, ccw, VIRTIO_CCW_DOING_WRITE_FEAT);
+	ret = ccw_io_helper(vcdev, ccw, VIRTIO_CCW_DOING_WRITE_FEAT);
+	if (ret)
+		goto out_free;
 
 	if (vcdev->revision == 0)
 		goto out_free;
@@ -796,13 +800,13 @@ static int virtio_ccw_finalize_features(struct virtio_device *vdev)
 	ccw->flags = 0;
 	ccw->count = sizeof(*features);
 	ccw->cda = (__u32)(unsigned long)features;
-	ccw_io_helper(vcdev, ccw, VIRTIO_CCW_DOING_WRITE_FEAT);
+	ret = ccw_io_helper(vcdev, ccw, VIRTIO_CCW_DOING_WRITE_FEAT);
 
 out_free:
 	kfree(features);
 	kfree(ccw);
 
-	return 0;
+	return ret;
 }
 
 static void virtio_ccw_get_config(struct virtio_device *vdev,
