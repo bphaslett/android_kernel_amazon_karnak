@@ -1809,6 +1809,7 @@ void kvm_vgic_destroy(struct kvm *kvm)
 	dist->irq_spi_cpu = NULL;
 	dist->irq_spi_target = NULL;
 	dist->irq_pending_on_cpu = NULL;
+	dist->nr_cpus = 0;
 }
 
 /*
@@ -1822,7 +1823,7 @@ static int vgic_init(struct kvm *kvm)
 	int nr_cpus, nr_irqs;
 	int ret, i, vcpu_id;
 
-	if (dist->nr_cpus)	/* Already allocated */
+	if (vgic_initialized(kvm))
 		return 0;
 
 	nr_cpus = dist->nr_cpus = atomic_read(&kvm->online_vcpus);
