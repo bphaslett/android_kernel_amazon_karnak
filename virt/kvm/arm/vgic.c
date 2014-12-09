@@ -1713,7 +1713,7 @@ int kvm_vgic_inject_irq(struct kvm *kvm, int cpuid, unsigned int irq_num,
 	int ret = 0;
 	int vcpu_id;
 
-	if (unlikely(!vgic_initialized(kvm))) {
+	if (unlikely(!vgic_ready(kvm))) {
 		mutex_lock(&kvm->lock);
 		ret = vgic_init(kvm);
 		mutex_unlock(&kvm->lock);
@@ -1917,7 +1917,7 @@ int kvm_vgic_map_resources(struct kvm *kvm)
 
 	mutex_lock(&kvm->lock);
 
-	if (vgic_initialized(kvm))
+	if (vgic_ready(kvm))
 		goto out;
 
 	if (IS_VGIC_ADDR_UNDEF(kvm->arch.vgic.vgic_dist_base) ||
@@ -2311,7 +2311,7 @@ static int vgic_set_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
 
 		mutex_lock(&dev->kvm->lock);
 
-		if (vgic_initialized(dev->kvm) || dev->kvm->arch.vgic.nr_irqs)
+		if (vgic_ready(dev->kvm) || dev->kvm->arch.vgic.nr_irqs)
 			ret = -EBUSY;
 		else
 			dev->kvm->arch.vgic.nr_irqs = val;
