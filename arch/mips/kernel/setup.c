@@ -497,7 +497,7 @@ static int usermem __initdata;
 
 static int __init early_parse_mem(char *p)
 {
-	phys_t start, size;
+	phys_addr_t start, size;
 
 	/*
 	 * If a user specifies memory size, we
