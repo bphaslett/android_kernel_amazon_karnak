@@ -1208,6 +1208,7 @@ void iscsi_target_login_sess_out(struct iscsi_conn *conn,
 	}
 	kfree(conn->sess->sess_ops);
 	kfree(conn->sess);
+	conn->sess = NULL;
 
 old_sess_out:
 	iscsi_stop_login_thread_timer(np);
