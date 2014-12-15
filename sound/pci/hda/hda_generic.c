@@ -3305,6 +3305,8 @@ static int create_input_ctls(struct hda_codec *codec)
 					   "Stereo Mix", 0);
 		if (err < 0)
 			return err;
+		else
+			spec->suppress_auto_mic = 1;
 	}
 
 	return 0;
