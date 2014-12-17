@@ -50,7 +50,7 @@ static inline struct thermal_cooling_device *
 of_cpufreq_cooling_register(struct device_node *np,
 			    const struct cpumask *clip_cpus)
 {
-	return NULL;
+	return ERR_PTR(-ENOSYS);
 }
 #endif
 
@@ -67,13 +67,13 @@ unsigned int cpufreq_cooling_get_frequency(unsigned int cpu,
 static inline struct thermal_cooling_device *
 cpufreq_cooling_register(const struct cpumask *clip_cpus)
 {
-	return NULL;
+	return ERR_PTR(-ENOSYS);
 }
 static inline struct thermal_cooling_device *
 of_cpufreq_cooling_register(struct device_node *np,
 			    const struct cpumask *clip_cpus)
 {
-	return NULL;
+	return ERR_PTR(-ENOSYS);
 }
 static inline
 void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
