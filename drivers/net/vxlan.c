@@ -1607,12 +1607,6 @@ static int vxlan6_xmit_skb(struct vxlan_sock *vs,
 		goto err;
 	}
 
-	skb = udp_tunnel_handle_offloads(skb, udp_sum);
-	if (IS_ERR(skb)) {
-		err = -EINVAL;
-		goto err;
-	}
-
 	vxh = (struct vxlanhdr *) __skb_push(skb, sizeof(*vxh));
 	vxh->vx_flags = htonl(VXLAN_FLAGS);
 	vxh->vx_vni = vni;
