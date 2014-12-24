@@ -126,8 +126,10 @@ int geneve_xmit_skb(struct geneve_sock *gs, struct rtable *rt,
 			+ (vlan_tx_tag_present(skb) ? VLAN_HLEN : 0);
 
 	err = skb_cow_head(skb, min_headroom);
-	if (unlikely(err))
+	if (unlikely(err)) {
+		kfree_skb(skb);
 		return err;
+	}
 
 	skb = vlan_hwaccel_push_inside(skb);
 	if (unlikely(!skb))
