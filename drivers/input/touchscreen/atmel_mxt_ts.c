@@ -91,15 +91,12 @@
 #define MXT_T6_STATUS_COMSERR	(1 << 2)
 
 /* MXT_GEN_POWER_T7 field */
-struct t7_config {
-	u8 idle;
-	u8 active;
-} __packed;
-
-#define MXT_POWER_CFG_RUN		0
-#define MXT_POWER_CFG_DEEPSLEEP		1
+#define MXT_POWER_IDLEACQINT	0
+#define MXT_POWER_ACTVACQINT	1
+#define MXT_POWER_ACTV2IDLETO	2
 
 /* MXT_TOUCH_MULTI_T9 field */
+#define MXT_TOUCH_CTRL		0
 #define MXT_T9_ORIENT		9
 #define MXT_T9_RANGE		18
 
@@ -838,6 +835,20 @@ static void mxt_proc_t6_messages(struct mxt_data *data, u8 *msg)
 
 	/* Save current status */
 	data->t6_status = status;
+}
+
+static int mxt_write_object(struct mxt_data *data,
+				 u8 type, u8 offset, u8 val)
+{
+	struct mxt_object *object;
+	u16 reg;
+
+	object = mxt_get_object(data, type);
+	if (!object || offset >= mxt_obj_size(object))
+		return -EINVAL;
+
+	reg = object->start_address;
+	return mxt_write_reg(data->client, reg + offset, val);
 }
 
 static void mxt_input_button(struct mxt_data *data, u8 *message)
@@ -2566,12 +2577,6 @@ static int mxt_configure_objects(struct mxt_data *data,
 	struct device *dev = &data->client->dev;
 	int error;
 
-	error = mxt_init_t7_power_cfg(data);
-	if (error) {
-		dev_err(dev, "Failed to initialize power cfg\n");
-		goto err_free_object_table;
-	}
-
 	if (cfg) {
 		error = mxt_update_cfg(data, cfg);
 		if (error)
@@ -3109,7 +3114,9 @@ static void mxt_start(struct mxt_data *data)
 		 */
 		mxt_process_messages_until_invalid(data);
 
-		mxt_set_t7_power_cfg(data, MXT_POWER_CFG_RUN);
+		/* Touch enable */
+		mxt_write_object(data,
+				MXT_TOUCH_MULTI_T9, MXT_TOUCH_CTRL, 0x83);
 
 		/* Recalibrate since chip has been in deep sleep */
 		mxt_t6_command(data, MXT_COMMAND_CALIBRATE, 1, false);
@@ -3129,8 +3136,11 @@ static void mxt_stop(struct mxt_data *data)
 
 	if (data->use_regulator)
 		mxt_regulator_disable(data);
-	else
-		mxt_set_t7_power_cfg(data, MXT_POWER_CFG_DEEPSLEEP);
+	else {
+		/* Touch disable */
+		mxt_write_object(data,
+				MXT_TOUCH_MULTI_T9, MXT_TOUCH_CTRL, 0);
+	}
 
 	mxt_reset_slots(data);
 	data->suspended = true;
@@ -3341,6 +3351,8 @@ static int __maybe_unused mxt_resume(struct device *dev)
 	struct i2c_client *client = to_i2c_client(dev);
 	struct mxt_data *data = i2c_get_clientdata(client);
 	struct input_dev *input_dev = data->input_dev;
+
+	mxt_soft_reset(data);
 
 	mutex_lock(&input_dev->mutex);
 
