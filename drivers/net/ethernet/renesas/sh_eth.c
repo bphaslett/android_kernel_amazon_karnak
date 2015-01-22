@@ -1982,6 +1982,7 @@ static int sh_eth_set_ringparam(struct net_device *ndev,
 		return -EINVAL;
 
 	if (netif_running(ndev)) {
+		netif_device_detach(ndev);
 		netif_tx_disable(ndev);
 		/* Disable interrupts by clearing the interrupt mask. */
 		sh_eth_write(ndev, 0x0000, EESIPR);
@@ -2015,7 +2016,7 @@ static int sh_eth_set_ringparam(struct net_device *ndev,
 		sh_eth_write(ndev, mdp->cd->eesipr_value, EESIPR);
 		/* Setting the Rx mode will start the Rx process. */
 		sh_eth_write(ndev, EDRRR_R, EDRRR);
-		netif_wake_queue(ndev);
+		netif_device_attach(ndev);
 	}
 
 	return 0;
