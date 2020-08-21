@@ -3567,7 +3567,6 @@ void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
 		return;
 #endif
 
-	if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
 	if (!cpuset_zone_allowed(zone, GFP_KERNEL | __GFP_HARDWALL))
 		return;
 	pgdat = zone->zone_pgdat;
