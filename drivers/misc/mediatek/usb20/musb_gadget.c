@@ -2620,7 +2620,7 @@ static int musb_gadget_pullup(struct usb_gadget *gadget, int is_on)
 }
 
 static int musb_gadget_start(struct usb_gadget *g, struct usb_gadget_driver *driver);
-static int musb_gadget_stop(struct usb_gadget *g, struct usb_gadget_driver *driver);
+static int musb_gadget_stop(struct usb_gadget *g);
 
 static const struct usb_gadget_ops musb_gadget_operations = {
 	.get_frame = musb_gadget_get_frame,
@@ -2882,7 +2882,7 @@ static void stop_activity(struct musb *musb, struct usb_gadget_driver *driver)
  *
  * @param driver the gadget driver to unregister
  */
-static int musb_gadget_stop(struct usb_gadget *g, struct usb_gadget_driver *driver)
+static int musb_gadget_stop(struct usb_gadget *g)
 {
 	struct musb *musb = gadget_to_musb(g);
 	unsigned long flags;
@@ -2902,10 +2902,10 @@ static int musb_gadget_stop(struct usb_gadget *g, struct usb_gadget_driver *driv
 	(void)musb_gadget_vbus_draw(&musb->g, 0);
 
 	musb->xceiv->otg->state = OTG_STATE_UNDEFINED;
-	stop_activity(musb, driver);
+	stop_activity(musb, musb->gadget_driver);
 	otg_set_peripheral(musb->xceiv->otg, NULL);
 
-	DBG(2, "unregistering driver %s\n", driver->function);
+	DBG(2, "unregistering driver %s\n", musb->gadget_driver->function);
 
 	musb->is_active = 0;
 	musb_platform_try_idle(musb, 0);
