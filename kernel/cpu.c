@@ -91,11 +91,12 @@ static struct {
 
 static void apply_puts_pending(int max)
 {
-	int delta;
+	int delta, i;
 
 	if (atomic_read(&cpu_hotplug.puts_pending) >= max) {
 		delta = atomic_xchg(&cpu_hotplug.puts_pending, 0);
-		cpu_hotplug.refcount -= delta;
+		for (i=0; i < delta; i++)
+			atomic_dec(&cpu_hotplug.refcount);
 	}
 }
 
@@ -169,6 +170,7 @@ EXPORT_SYMBOL_GPL(put_online_cpus);
  */
 void cpu_hotplug_begin(void)
 {
+	int i;
 	DEFINE_WAIT(wait);
 
 	cpu_hotplug.active_writer = current;
@@ -180,7 +182,8 @@ void cpu_hotplug_begin(void)
 			int delta;
 
 			delta = atomic_xchg(&cpu_hotplug.puts_pending, 0);
-			cpu_hotplug.refcount -= delta;
+			for (i = 0; i < delta; i++)
+				atomic_dec(&cpu_hotplug.refcount);
 		}
 		prepare_to_wait(&cpu_hotplug.wq, &wait, TASK_UNINTERRUPTIBLE);
 		if (likely(!atomic_read(&cpu_hotplug.refcount)))
