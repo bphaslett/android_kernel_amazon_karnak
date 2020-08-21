@@ -150,37 +150,37 @@ static void musb_do_idle(unsigned long _musb)
 
 	if (musb->is_active) {
 		DBG(0, "%s active, igonre do_idle\n",
-			otg_state_string(musb->xceiv->state));
+			otg_state_string(musb->xceiv->otg->state));
 		return;
 	}
 
 	spin_lock_irqsave(&musb->lock, flags);
 
-	switch (musb->xceiv->state) {
+	switch (musb->xceiv->otg->state) {
 	case OTG_STATE_B_PERIPHERAL:
 	case OTG_STATE_A_WAIT_BCON:
 		devctl = musb_readb(musb->mregs, MUSB_DEVCTL);
 		if (devctl & MUSB_DEVCTL_BDEVICE) {
-			musb->xceiv->state = OTG_STATE_B_IDLE;
+			musb->xceiv->otg->state = OTG_STATE_B_IDLE;
 			MUSB_DEV_MODE(musb);
 		} else {
-			musb->xceiv->state = OTG_STATE_A_IDLE;
+			musb->xceiv->otg->state = OTG_STATE_A_IDLE;
 			MUSB_HST_MODE(musb);
 		}
 		break;
 	case OTG_STATE_A_HOST:
 		devctl = musb_readb(musb->mregs, MUSB_DEVCTL);
 		if (devctl &  MUSB_DEVCTL_BDEVICE)
-			musb->xceiv->state = OTG_STATE_B_IDLE;
+			musb->xceiv->otg->state = OTG_STATE_B_IDLE;
 		else
-			musb->xceiv->state = OTG_STATE_A_WAIT_BCON;
+			musb->xceiv->otg->state = OTG_STATE_A_WAIT_BCON;
 		break;
 	default:
 		break;
 	}
 	spin_unlock_irqrestore(&musb->lock, flags);
 
-	DBG(0, "otg_state %s\n", otg_state_string(musb->xceiv->state));
+	DBG(0, "otg_state %s\n", otg_state_string(musb->xceiv->otg->state));
 }
 
 static void mt_usb_try_idle(struct musb *musb, unsigned long timeout)
@@ -193,8 +193,8 @@ static void mt_usb_try_idle(struct musb *musb, unsigned long timeout)
 
 	/* Never idle if active, or when VBUS timeout is not set as host */
 	if (musb->is_active || ((musb->a_wait_bcon == 0)
-			&& (musb->xceiv->state == OTG_STATE_A_WAIT_BCON))) {
-		DBG(2, "%s active, deleting timer\n", otg_state_string(musb->xceiv->state));
+			&& (musb->xceiv->otg->state == OTG_STATE_A_WAIT_BCON))) {
+		DBG(2, "%s active, deleting timer\n", otg_state_string(musb->xceiv->otg->state));
 		del_timer(&musb_idle_timer);
 		last_timer = jiffies;
 		return;
@@ -211,7 +211,7 @@ static void mt_usb_try_idle(struct musb *musb, unsigned long timeout)
 	last_timer = timeout;
 
 	DBG(2, "%s inactive, for idle timer for %lu ms\n",
-		otg_state_string(musb->xceiv->state),
+		otg_state_string(musb->xceiv->otg->state),
 		(unsigned long)jiffies_to_msecs(timeout - jiffies));
 	mod_timer(&musb_idle_timer, timeout);
 }

@@ -822,7 +822,7 @@ static void musb_id_pin_work(struct work_struct *data)
 #else
 		mt_usb_check_reconnect();/*ALPS01688604, IDDIG noise caused by MHL init*/
 #endif
-		mtk_musb->xceiv->state = OTG_STATE_B_IDLE;
+		mtk_musb->xceiv->otg->state = OTG_STATE_B_IDLE;
 		MUSB_DEV_MODE(mtk_musb);
 		switch_int_to_host(mtk_musb);
 	}

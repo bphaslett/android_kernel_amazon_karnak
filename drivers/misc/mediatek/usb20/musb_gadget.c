@@ -2413,7 +2413,7 @@ static int musb_gadget_wakeup(struct usb_gadget *gadget)
 
 	spin_lock_irqsave(&musb->lock, flags);
 
-	switch (musb->xceiv->state) {
+	switch (musb->xceiv->otg->state) {
 	case OTG_STATE_B_PERIPHERAL:
 		/* NOTE:  OTG state machine doesn't include B_SUSPENDED;
 		 * that's part of the standard usb 1.1 state machine, and
@@ -2452,7 +2452,7 @@ static int musb_gadget_wakeup(struct usb_gadget *gadget)
 		status = 0;
 		goto done;
 	default:
-		DBG(2, "Unhandled wake: %s\n", otg_state_string(musb->xceiv->state));
+		DBG(2, "Unhandled wake: %s\n", otg_state_string(musb->xceiv->otg->state));
 		goto done;
 	}
 
@@ -2812,7 +2812,7 @@ static int musb_gadget_start(struct usb_gadget *g, struct usb_gadget_driver *dri
 	musb->is_active = 1;
 
 	otg_set_peripheral(otg, &musb->g);
-	musb->xceiv->state = OTG_STATE_B_IDLE;
+	musb->xceiv->otg->state = OTG_STATE_B_IDLE;
 	spin_unlock_irqrestore(&musb->lock, flags);
 
 	/* REVISIT:  funcall to other code, which also
@@ -2901,7 +2901,7 @@ static int musb_gadget_stop(struct usb_gadget *g, struct usb_gadget_driver *driv
 
 	(void)musb_gadget_vbus_draw(&musb->g, 0);
 
-	musb->xceiv->state = OTG_STATE_UNDEFINED;
+	musb->xceiv->otg->state = OTG_STATE_UNDEFINED;
 	stop_activity(musb, driver);
 	otg_set_peripheral(musb->xceiv->otg, NULL);
 
@@ -2930,7 +2930,7 @@ static int musb_gadget_stop(struct usb_gadget *g, struct usb_gadget_driver *driv
 void musb_g_resume(struct musb *musb)
 {
 	musb->is_suspended = 0;
-	switch (musb->xceiv->state) {
+	switch (musb->xceiv->otg->state) {
 	case OTG_STATE_B_IDLE:
 		break;
 	case OTG_STATE_B_WAIT_ACON:
@@ -2943,7 +2943,7 @@ void musb_g_resume(struct musb *musb)
 		}
 		break;
 	default:
-		WARNING("unhandled RESUME transition (%s)\n", otg_state_string(musb->xceiv->state));
+		WARNING("unhandled RESUME transition (%s)\n", otg_state_string(musb->xceiv->otg->state));
 	}
 }
 
@@ -2955,10 +2955,10 @@ void musb_g_suspend(struct musb *musb)
 	devctl = musb_readb(musb->mregs, MUSB_DEVCTL);
 	DBG(0, "devctl %02x\n", devctl);
 
-	switch (musb->xceiv->state) {
+	switch (musb->xceiv->otg->state) {
 	case OTG_STATE_B_IDLE:
 		if ((devctl & MUSB_DEVCTL_VBUS) == MUSB_DEVCTL_VBUS)
-			musb->xceiv->state = OTG_STATE_B_PERIPHERAL;
+			musb->xceiv->otg->state = OTG_STATE_B_PERIPHERAL;
 		break;
 	case OTG_STATE_B_PERIPHERAL:
 		musb->is_suspended = 1;
@@ -2974,7 +2974,7 @@ void musb_g_suspend(struct musb *musb)
 		 * A_PERIPHERAL may need care too
 		 */
 		WARNING("unhandled SUSPEND transition (%s)\n",
-			otg_state_string(musb->xceiv->state));
+			otg_state_string(musb->xceiv->otg->state));
 	}
 }
 
@@ -3005,9 +3005,9 @@ int polling_vbus_value(void *data)
 		vbus_value = battery_meter_get_charger_voltage();
 #endif
 		DBG(0, "musb::Vbus (%d)\n", vbus_value);
-		DBG(0, "OTG_State: (%s)\n", otg_state_string(mtk_musb->xceiv->state));
+		DBG(0, "OTG_State: (%s)\n", otg_state_string(mtk_musb->xceiv->otg->state));
 
-		switch (mtk_musb->xceiv->state) {
+		switch (mtk_musb->xceiv->otg->state) {
 		case OTG_STATE_B_IDLE:
 		case OTG_STATE_B_PERIPHERAL:
 			vbus_polling_timeout = jiffies + 5 * HZ;
@@ -3071,7 +3071,7 @@ int polling_vbus_value(void *data)
 			DBG(0, "Sending SRP Done: devctl: %02x\n", devctl);
 
 			DBG(0, "polling_vbus_value - before OTG_STATE_B_IDLE\n");
-			mtk_musb->xceiv->state = OTG_STATE_B_IDLE;
+			mtk_musb->xceiv->otg->state = OTG_STATE_B_IDLE;
 			DBG(0, "polling_vbus_value - after OTG_STATE_B_IDLE\n");
 
 			vbus_polling_timeout = jiffies + 5 * HZ;
@@ -3113,7 +3113,7 @@ int polling_vbus_value(void *data)
 				mt_usb_disconnect();
 			}
 			DBG(0, "polling_vbus_value - Done - %s\n",
-			    otg_state_string(mtk_musb->xceiv->state));
+			    otg_state_string(mtk_musb->xceiv->otg->state));
 
 			break;
 #if 0
@@ -3155,10 +3155,10 @@ void musb_g_disconnect(struct musb *musb)
 
 #if defined(CONFIG_USBIF_COMPLIANCE)
 	pr_info("%s: %02x, otg_srp_rqd: 0x%x (%s)\n", __func__, devctl, musb->g.otg_srp_reqd,
-		otg_state_string(musb->xceiv->state));
+		otg_state_string(musb->xceiv->otg->state));
 	pr_info("devctl %02x\n", devctl);
 	if (musb->g.otg_srp_reqd)
-		musb->xceiv->state = OTG_STATE_B_SRP_INIT;
+		musb->xceiv->otg->state = OTG_STATE_B_SRP_INIT;
 #endif
 
 	/* clear HR */
@@ -3174,22 +3174,22 @@ void musb_g_disconnect(struct musb *musb)
 		spin_lock(&musb->lock);
 	}
 
-	switch (musb->xceiv->state) {
+	switch (musb->xceiv->otg->state) {
 	default:
 		DBG(2, "Unhandled disconnect %s, setting a_idle\n",
-		    otg_state_string(musb->xceiv->state));
-		musb->xceiv->state = OTG_STATE_A_IDLE;
+		    otg_state_string(musb->xceiv->otg->state));
+		musb->xceiv->otg->state = OTG_STATE_A_IDLE;
 		MUSB_HST_MODE(musb);
 		break;
 	case OTG_STATE_A_PERIPHERAL:
-		musb->xceiv->state = OTG_STATE_A_WAIT_BCON;
+		musb->xceiv->otg->state = OTG_STATE_A_WAIT_BCON;
 		MUSB_HST_MODE(musb);
 		break;
 	case OTG_STATE_B_WAIT_ACON:
 	case OTG_STATE_B_HOST:
 	case OTG_STATE_B_PERIPHERAL:
 	case OTG_STATE_B_IDLE:
-		musb->xceiv->state = OTG_STATE_B_IDLE;
+		musb->xceiv->otg->state = OTG_STATE_B_IDLE;
 #if defined(CONFIG_USBIF_COMPLIANCE)
 		pr_info("%s: %x\n", __func__, musb->g.host_request);
 		musb_set_host_request_flag(musb, 0);
@@ -3197,7 +3197,7 @@ void musb_g_disconnect(struct musb *musb)
 		break;
 	case OTG_STATE_B_SRP_INIT:
 #if defined(CONFIG_USBIF_COMPLIANCE)
-		pr_info("%s: %s\n", __func__, otg_state_string(musb->xceiv->state));
+		pr_info("%s: %s\n", __func__, otg_state_string(musb->xceiv->otg->state));
 		if (musb->g.otg_srp_reqd) {
 			pr_info("disconnect, Check otg_srp_reqd: 0x%x,  devctl %02x\n",
 				musb->g.otg_srp_reqd, devctl);
@@ -3276,10 +3276,10 @@ void musb_g_reset(struct musb *musb) __releases(musb->lock) __acquires(musb->loc
 	 * or else after HNP, as A-Device
 	 */
 	if (devctl & MUSB_DEVCTL_BDEVICE) {
-		musb->xceiv->state = OTG_STATE_B_PERIPHERAL;
+		musb->xceiv->otg->state = OTG_STATE_B_PERIPHERAL;
 		musb->g.is_a_peripheral = 0;
 	} else {
-		musb->xceiv->state = OTG_STATE_A_PERIPHERAL;
+		musb->xceiv->otg->state = OTG_STATE_A_PERIPHERAL;
 		musb->g.is_a_peripheral = 1;
 	}
 
