@@ -133,10 +133,10 @@ static int mmc_bus_suspend(struct device *dev)
 		return ret;
 
 	ret = host->bus_ops->suspend(host);
-	if (ret && dev->driver && drv->resume) {
+	if (ret && dev->driver && dev->driver->resume) {
 		pr_err("%s: Card suspend error %d, driver resume\n",
 		       mmc_hostname(host), ret);
-		drv->resume(card);
+		dev->driver->resume(dev);
 	}
 
 	return ret;
