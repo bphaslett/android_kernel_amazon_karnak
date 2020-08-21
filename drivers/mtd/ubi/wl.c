@@ -1609,7 +1609,7 @@ retry_erase:
 		return err;
 	}
 
-	ubi_err("failed to erase PEB %d, error %d", pnum, err);
+	ubi_err(ubi, "failed to erase PEB %d, error %d", pnum, err);
 
 	if (err == -EINTR || err == -ENOMEM || err == -EAGAIN ||
 	    err == -EBUSY) {
@@ -1631,7 +1631,7 @@ retry_erase:
 	/* It is %-EIO, the PEB went bad */
 
 	if (!ubi->bad_allowed) {
-		ubi_err("bad physical eraseblock %d detected", pnum);
+		ubi_err(ubi, "bad physical eraseblock %d detected", pnum);
 		goto out_ro;
 	}
 
@@ -1643,17 +1643,17 @@ retry_erase:
 		ubi->rsvd_pebs += need;
 		ubi->beb_rsvd_pebs += need;
 		if (need > 0)
-			ubi_msg("reserve more %d PEBs", need);
+			ubi_msg(ubi, "reserve more %d PEBs", need);
 	}
 
 	if (ubi->beb_rsvd_pebs == 0) {
 		spin_unlock(&ubi->volumes_lock);
-		ubi_err("no reserved physical eraseblocks");
+		ubi_err(ubi, "no reserved physical eraseblocks");
 		goto out_ro;
 	}
 	spin_unlock(&ubi->volumes_lock);
 
-	ubi_msg("mark PEB %d as bad", pnum);
+	ubi_msg(ubi, "mark PEB %d as bad", pnum);
 	err = ubi_io_mark_bad(ubi, pnum);
 	if (err)
 		goto out_ro;
@@ -1664,9 +1664,9 @@ retry_erase:
 	ubi->good_peb_count -= 1;
 	ubi_calculate_reserved(ubi);
 	if (ubi->beb_rsvd_pebs)
-		ubi_msg("%d PEBs left in the reserve", ubi->beb_rsvd_pebs);
+		ubi_msg(ubi, "%d PEBs left in the reserve", ubi->beb_rsvd_pebs);
 	else
-		ubi_warn("last PEB from the reserved pool was used");
+		ubi_warn(ubi, "last PEB from the reserved pool was used");
 	spin_unlock(&ubi->volumes_lock);
 
 	return err;

@@ -397,7 +397,7 @@ static ssize_t dev_attribute_store(struct device *dev, struct device_attribute *
 		int ret = kstrtoint(buf, 0, &th);
 
 		if (ret == 0) {
-			ubi_msg("set th=%d\n", th);
+			ubi_msg(ubi, "set th=%d\n", th);
 			ubi->wl_th = th;
 		}
 	}

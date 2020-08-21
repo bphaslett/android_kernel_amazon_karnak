@@ -946,7 +946,7 @@ static int validate_vid_hdr(const struct ubi_device *ubi,
 	}
 
 	if (data_size > ubi->leb_size) {
-		ubi_err("bad data_size");
+		ubi_err(ubi, "bad data_size");
 		goto bad;
 	}
 
@@ -1543,7 +1543,7 @@ int ubi_io_read_oob(const struct ubi_device *ubi, void *databuf, void *oobbuf,
 			 * enabled. A corresponding message will be printed
 			 * later, when it is has been scrubbed.
 			 */
-			ubi_msg("fixable bit-flip detected at addr %lld", addr);
+			ubi_msg(ubi, "fixable bit-flip detected at addr %lld", addr);
 			if (oobbuf)
 				ubi_assert(ops.oobretlen == ops.ooblen);
 			return UBI_IO_BITFLIPS;
@@ -1553,7 +1553,7 @@ int ubi_io_read_oob(const struct ubi_device *ubi, void *databuf, void *oobbuf,
 			dump_stack();
 			err = -EIO;
 		}
-		ubi_msg("mtd_read_oob err %d\n", err);
+		ubi_msg(ubi, "mtd_read_oob err %d\n", err);
 	}
 
 	return err;
