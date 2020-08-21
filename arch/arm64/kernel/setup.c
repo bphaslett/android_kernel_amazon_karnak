@@ -87,6 +87,7 @@ unsigned int compat_elf_hwcap2 __read_mostly;
 DECLARE_BITMAP(cpu_hwcaps, ARM64_NCAPS);
 
 static const char *cpu_name;
+static const char *machine_name;
 phys_addr_t __fdt_pointer __initdata;
 
 /*
@@ -323,6 +324,7 @@ static void __init setup_machine_fdt(phys_addr_t dt_phys)
 			cpu_relax();
 	}
 
+	machine_name = of_flat_dt_get_machine_name();
 	dump_stack_set_arch_desc("%s (DT)", of_flat_dt_get_machine_name());
 }
 
@@ -482,12 +484,8 @@ static const char *compat_hwcap_str[] = {
 	"idivt",
 	"vfpd32",
 	"lpae",
-<<<<<<< HEAD
 	"evtstrm",
 	NULL
-=======
-	"evtstrm"
->>>>>>> 44b82b7700d0... arm64: Fix up /proc/cpuinfo
 };
 
 static const char *compat_hwcap2_str[] = {
@@ -500,7 +498,6 @@ static const char *compat_hwcap2_str[] = {
 };
 #endif /* CONFIG_COMPAT */
 
-<<<<<<< HEAD
 #if defined(CONFIG_IDME)
 unsigned int idme_get_board_type(void);
 unsigned int idme_get_board_rev(void);
@@ -512,11 +509,6 @@ static int c_show(struct seq_file *m, void *v)
 
 	seq_printf(m, "Processor\t: %s rev %d (%s)\n",
 		   cpu_name, read_cpuid_id() & 15, ELF_PLATFORM);
-=======
-static int c_show(struct seq_file *m, void *v)
-{
-	int i, j;
->>>>>>> 44b82b7700d0... arm64: Fix up /proc/cpuinfo
 
 	for_each_online_cpu(i) {
 		struct cpuinfo_arm64 *cpuinfo = &per_cpu(cpu_data, i);
@@ -530,15 +522,12 @@ static int c_show(struct seq_file *m, void *v)
 #ifdef CONFIG_SMP
 		seq_printf(m, "processor\t: %d\n", i);
 #endif
-<<<<<<< HEAD
 		seq_printf(m, "model name\t: %s rev %d (%s)\n",
 			   cpu_name, read_cpuid_id() & 15, ELF_PLATFORM);
 
 		seq_printf(m, "BogoMIPS\t: %lu.%02lu\n",
 			   loops_per_jiffy / (500000UL/HZ),
 			   loops_per_jiffy / (5000UL/HZ) % 100);
-=======
->>>>>>> 44b82b7700d0... arm64: Fix up /proc/cpuinfo
 
 		/*
 		 * Dump out the common processor features in a single line.
@@ -571,11 +560,8 @@ static int c_show(struct seq_file *m, void *v)
 		seq_printf(m, "CPU part\t: 0x%03x\n", MIDR_PARTNUM(midr));
 		seq_printf(m, "CPU revision\t: %d\n\n", MIDR_REVISION(midr));
 	}
-<<<<<<< HEAD
 
 	seq_printf(m, "Hardware\t: %s\n", machine_name);
-=======
->>>>>>> 44b82b7700d0... arm64: Fix up /proc/cpuinfo
 
 #if defined(CONFIG_ARCH_MT8163)
 #if defined(CONFIG_IDME)
