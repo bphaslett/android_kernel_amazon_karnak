@@ -1477,7 +1477,8 @@ int mtk_p2p_cfg80211_change_bss(struct wiphy *wiphy, struct net_device *dev, str
 	return i4Rslt;
 }				/* mtk_p2p_cfg80211_change_bss */
 
-int mtk_p2p_cfg80211_del_station(struct wiphy *wiphy, struct net_device *dev, const u8 *mac)
+int mtk_p2p_cfg80211_del_station(struct wiphy *wiphy, struct net_device *dev,
+				 struct station_del_parameters *params)
 {
 	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) NULL;
 	INT_32 i4Rslt = -EINVAL;
@@ -1489,8 +1490,8 @@ int mtk_p2p_cfg80211_del_station(struct wiphy *wiphy, struct net_device *dev, co
 		if ((wiphy == NULL) || (dev == NULL))
 			break;
 
-		if (mac == NULL)
-			mac = aucBcMac;
+		if (params->mac == NULL)
+			params->mac = aucBcMac;
 
 		DBGLOG(P2P, TRACE, "mtk_p2p_cfg80211_del_station.\n");
 
@@ -1512,7 +1513,7 @@ int mtk_p2p_cfg80211_del_station(struct wiphy *wiphy, struct net_device *dev, co
 
 		prDisconnectMsg->rMsgHdr.eMsgId = MID_MNY_P2P_CONNECTION_ABORT;
 		prDisconnectMsg->ucRoleIdx = ucRoleIdx;
-		COPY_MAC_ADDR(prDisconnectMsg->aucTargetID, mac);
+		COPY_MAC_ADDR(prDisconnectMsg->aucTargetID, params->mac);
 		prDisconnectMsg->u2ReasonCode = REASON_CODE_UNSPECIFIED;
 		prDisconnectMsg->fgSendDeauth = TRUE;
 

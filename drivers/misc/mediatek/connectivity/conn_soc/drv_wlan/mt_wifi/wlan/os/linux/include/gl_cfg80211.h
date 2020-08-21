@@ -298,7 +298,8 @@ int mtk_cfg80211_add_station(struct wiphy *wiphy, struct net_device *ndev,
 int mtk_cfg80211_change_station(struct wiphy *wiphy, struct net_device *ndev,
 				const u8 *mac, struct station_parameters *params);
 
-int mtk_cfg80211_del_station(struct wiphy *wiphy, struct net_device *ndev, const u8 *mac);
+int mtk_cfg80211_del_station(struct wiphy *wiphy, struct net_device *ndev,
+			     struct station_del_parameters *params);
 
 int mtk_cfg80211_scan(struct wiphy *wiphy, struct cfg80211_scan_request *request);
 

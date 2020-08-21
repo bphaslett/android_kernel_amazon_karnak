@@ -2429,7 +2429,8 @@ int mtk_cfg80211_add_station(struct wiphy *wiphy, struct net_device *ndev,
  *		must implement if you have add_station().
  */
 /*----------------------------------------------------------------------------*/
-int mtk_cfg80211_del_station(struct wiphy *wiphy, struct net_device *ndev, const u8 *mac)
+int mtk_cfg80211_del_station(struct wiphy *wiphy, struct net_device *ndev,
+			     struct station_del_parameters *params)
 {
 /* fgIsTDLSlinkEnable = 0; */
 
@@ -2444,9 +2445,9 @@ int mtk_cfg80211_del_station(struct wiphy *wiphy, struct net_device *ndev, const
 	prAdapter = prGlueInfo->prAdapter;
 	prGlueInfo = (P_GLUE_INFO_T) wiphy_priv(wiphy);
 	ASSERT(prGlueInfo);
-	/* For kernel 3.18 modification, we trasfer to local buff to query sta */
+	/* transfer to local buff to query sta */
 	memset(deleteMac, 0, MAC_ADDR_LEN);
-	memcpy(&deleteMac, mac, MAC_ADDR_LEN);
+	memcpy(&deleteMac, params->mac, MAC_ADDR_LEN);
 
 	prStaRec = cnmGetStaRecByAddress(prAdapter, (UINT_8) prAdapter->prAisBssInfo->ucBssIndex, deleteMac);
 

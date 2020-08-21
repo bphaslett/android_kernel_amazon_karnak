@@ -566,7 +566,8 @@ int mtk_p2p_cfg80211_mgmt_tx(struct wiphy *wiphy,
 
 int mtk_p2p_cfg80211_stop_ap(struct wiphy *wiphy, struct net_device *dev);
 
-int mtk_p2p_cfg80211_del_station(struct wiphy *wiphy, struct net_device *dev, const u8 *mac);
+int mtk_p2p_cfg80211_del_station(struct wiphy *wiphy, struct net_device *dev,
+				 struct station_del_parameters *params);
 
 int mtk_p2p_cfg80211_set_channel(struct wiphy *wiphy, struct cfg80211_chan_def *chandef);
 

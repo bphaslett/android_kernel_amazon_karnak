@@ -724,7 +724,8 @@ int mtk_cfg80211_add_station(struct wiphy *wiphy, struct net_device *ndev,
  *		must implement if you have add_station().
  */
 /*----------------------------------------------------------------------------*/
-int mtk_cfg80211_del_station(struct wiphy *wiphy, struct net_device *ndev, const u8 *mac)
+int mtk_cfg80211_del_station(struct wiphy *wiphy, struct net_device *ndev,
+			     struct station_del_parameters *params)
 {
 	return 0;
 }
