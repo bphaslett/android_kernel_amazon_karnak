@@ -807,7 +807,8 @@ config USB_G_SERIAL
 	  which includes instructions and a "driver info file" needed to
 	  make MS-Windows work with CDC ACM.
 
-config USB_MIDI_GADGET tristate "MIDI Gadget"
+config USB_MIDI_GADGET
+	tristate "MIDI Gadget"
 	depends on SND
 	select USB_LIBCOMPOSITE
 	select SND_RAWMIDI
