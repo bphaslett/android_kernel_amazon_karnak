@@ -42,6 +42,7 @@
 
 #include "f_fs.c"
 #include "f_audio_source.c"
+#include "u_midi.h"
 #ifdef CONFIG_SND_RAWMIDI
 #include "f_midi.c"
 #endif
@@ -70,6 +71,9 @@ MODULE_LICENSE("GPL");
 MODULE_VERSION("1.0");
 
 static const char longname[] = "Gadget Android";
+
+struct usb_function *f_midi;
+struct usb_function_instance *fi_midi;
 
 /* Default vendor and product IDs, overridden by userspace */
 #define VENDOR_ID		0x0BB4
@@ -1827,30 +1831,57 @@ static struct android_usb_function rawbulk_gps_function = {
 static int midi_function_init(struct android_usb_function *f,
 					struct usb_composite_dev *cdev)
 {
+	int status;
 	struct midi_alsa_config *config;
+	struct f_midi_opts *midi_opts;
+
+	fi_midi = usb_get_function_instance("midi");
+	if (IS_ERR(fi_midi))
+		return PTR_ERR(fi_midi);
+
+	midi_opts = container_of(fi_midi, struct f_midi_opts, func_inst);
 
 	config = kzalloc(sizeof(struct midi_alsa_config), GFP_KERNEL);
 	f->config = config;
-	if (!config)
-		return -ENOMEM;
+	if (!config) {
+		status = -ENOMEM;
+		goto put;
+  }
 	config->card = -1;
 	config->device = -1;
-	return 0;
+
+put:
+	usb_put_function_instance(fi_midi);
+	return status;
 }
 
 static void midi_function_cleanup(struct android_usb_function *f)
 {
+	usb_put_function(f_midi);
+	usb_put_function_instance(fi_midi);
 	kfree(f->config);
 }
 
 static int midi_function_bind_config(struct android_usb_function *f,
 						struct usb_configuration *c)
 {
-	struct midi_alsa_config *config = f->config;
+	int status;
 
-	return f_midi_bind_config(c, SNDRV_DEFAULT_IDX1, SNDRV_DEFAULT_STR1,
-			MIDI_INPUT_PORTS, MIDI_OUTPUT_PORTS, MIDI_BUFFER_SIZE,
-			MIDI_QUEUE_LENGTH, config);
+	fi_midi = usb_get_function_instance("midi");
+	if (IS_ERR(fi_midi))
+		return PTR_ERR(fi_midi);
+
+	f_midi = usb_get_function(fi_midi);
+	if (IS_ERR(f_midi))
+		return PTR_ERR(f_midi);
+
+	status = usb_add_function(c, f_midi);
+	if (status < 0) {
+		usb_put_function(f_midi);
+		return status;
+	}
+
+	return 0;
 }
 
 static ssize_t midi_alsa_show(struct device *dev,
