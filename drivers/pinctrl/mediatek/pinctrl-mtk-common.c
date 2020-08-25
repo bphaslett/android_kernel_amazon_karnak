@@ -922,7 +922,7 @@ static int mtk_pinctrl_irq_request_resources(struct irq_data *d)
 		return -EINVAL;
 	}
 
-	ret = gpio_lock_as_irq(pctl->chip, pin->pin.number);
+	ret = gpiochip_lock_as_irq(pctl->chip, pin->pin.number);
 	if (ret) {
 		dev_err(pctl->dev, "unable to lock HW IRQ %lu for IRQ\n",
 			irqd_to_hwirq(d));
@@ -947,7 +947,7 @@ static void mtk_pinctrl_irq_release_resources(struct irq_data *d)
 		return;
 	}
 
-	gpio_unlock_as_irq(pctl->chip, pin->pin.number);
+	gpiochip_unlock_as_irq(pctl->chip, pin->pin.number);
 }
 
 static void __iomem *mtk_eint_get_offset(struct mtk_pinctrl *pctl,
