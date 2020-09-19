@@ -428,7 +428,7 @@ int get_md32_img_sz(const char *IMAGE_PATH)
 		return -1;
 	}
 
-	inode = filp->f_dentry->d_inode;
+	inode = filp->f_path.dentry->d_inode;
 	fsize = inode->i_size;
 
 	filp_close(filp, NULL);
@@ -450,7 +450,7 @@ int load_md32(const char *IMAGE_PATH, char *dst, int dst_len)
 		return r;
 	}
 
-	inode = filp->f_dentry->d_inode;
+	inode = filp->f_path.dentry->d_inode;
 	fsize = inode->i_size;
 	if (dst_len < fsize + 1) {
 		pr_err("[MD32] image %s dst_len to small(%d)!\n", IMAGE_PATH, dst_len);
