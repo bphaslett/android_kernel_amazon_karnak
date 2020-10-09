@@ -465,8 +465,6 @@ static void gic_cpu_init(void)
 
 	/* Enable system registers */
 	gic_enable_sre();
-}
->>>>>>> da33f31de3e1... irqchip: GICv3: ITS: plug ITS init into main GICv3 code
 
 	/* Set priority mask register */
 	gic_write_pmr(DEFAULT_PMR_VALUE);
