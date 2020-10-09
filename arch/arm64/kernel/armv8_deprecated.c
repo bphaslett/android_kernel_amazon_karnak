@@ -24,9 +24,6 @@
 #define CREATE_TRACE_POINTS
 #include "trace-events-emulation.h"
 
-#define CREATE_TRACE_POINTS
-#include "trace-events-emulation.h"
-
 /*
  * The runtime support for deprecated instruction support can be in one of
  * following three states -
