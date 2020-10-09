@@ -111,7 +111,7 @@ struct ipv6_txoptions *ipv6_update_options(struct sock *sk,
 			icsk->icsk_sync_mss(sk, icsk->icsk_pmtu_cookie);
 		}
 	}
-	opt = xchg((__force struct ipv6_txoptions **)&inet6_sk(sk)->opt,
+	opt = xchg((__force struct ipv6_txoptions **)&inet6_sk(sk)->opt, opt);
 	sk_dst_reset(sk);
 
 	return opt;
