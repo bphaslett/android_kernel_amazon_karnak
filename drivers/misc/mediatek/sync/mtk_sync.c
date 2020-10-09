@@ -43,7 +43,7 @@ EXPORT_SYMBOL(timeline_inc);
 
 int fence_create(struct sw_sync_timeline *obj, struct fence_data *data)
 {
-	int fd = get_unused_fd();
+	int fd = get_unused_fd_flags(0);
 	int err;
 	struct sync_pt *pt;
 	struct sync_fence *fence;
@@ -79,7 +79,7 @@ EXPORT_SYMBOL(fence_create);
 
 int fence_merge(char *const name, int fd1, int fd2)
 {
-	int fd = get_unused_fd();
+	int fd = get_unused_fd_flags(0);
 	int err;
 	struct sync_fence *fence1, *fence2, *fence3;
 
