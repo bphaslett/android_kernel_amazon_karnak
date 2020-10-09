@@ -393,7 +393,7 @@ static struct sym827_pdata *of_get_sym827_platform_data(struct device *dev)
 		return NULL;
 	}
 
-	pdata->init_data = of_get_regulator_init_data(dev, node);
+	pdata->init_data = of_get_regulator_init_data(dev, node, &sym827_reg);
 
 	of_node_put(node);
 
