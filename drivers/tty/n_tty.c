@@ -2219,11 +2219,6 @@ static ssize_t n_tty_read(struct tty_struct *tty, struct file *file,
 
 	add_wait_queue(&tty->read_wait, &wait);
 	while (nr) {
-		/* This statement must be first before checking for input
-		   so that any interrupt will set the state back to
-		   TASK_RUNNING. */
-		set_current_state(TASK_INTERRUPTIBLE);
-
 		/* First test for status change. */
 		if (packet && tty->link->ctrl_status) {
 			unsigned char cs;
