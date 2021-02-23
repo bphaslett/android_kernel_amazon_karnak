@@ -8256,6 +8256,7 @@ static int nl80211_tx_mgmt_cancel_wait(struct sk_buff *skb, struct genl_info *in
 
 static int nl80211_set_power_save(struct sk_buff *skb, struct genl_info *info)
 {
+	struct sk_buff *msg;
 	struct cfg80211_registered_device *rdev = info->user_ptr[0];
 	struct wireless_dev *wdev;
 	struct net_device *dev = info->user_ptr[1];
@@ -8266,7 +8267,16 @@ static int nl80211_set_power_save(struct sk_buff *skb, struct genl_info *info)
 	if (!info->attrs[NL80211_ATTR_PS_STATE])
 		return -EINVAL;
 
+#ifndef CONFIG_MTK_WIFI_PM_CONTROL
+	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
+	ps_state = NL80211_PS_DISABLED;
+
+	nla_put_u32(msg, NL80211_ATTR_PS_STATE, ps_state);
+	nlmsg_free(msg);
+#else
+
 	ps_state = nla_get_u32(info->attrs[NL80211_ATTR_PS_STATE]);
+#endif
 
 	if (ps_state != NL80211_PS_DISABLED && ps_state != NL80211_PS_ENABLED)
 		return -EINVAL;
