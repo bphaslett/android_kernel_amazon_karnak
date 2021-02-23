@@ -115,12 +115,6 @@ config NO_DISPLAY
 	help
 	  disable display hws clock when kernel initialization.
 
-config MTK_WIFI_PM_CONTROL
-	tristate "Mediatek Wi-Fi PM Control"
-	default n
-	help
-	Interface to control Wi-Fi Power Saver Modes
-	
 config MTK_SENSORS_1_0
 	tristate "Mediatek Sensors 1.0"
 	default y

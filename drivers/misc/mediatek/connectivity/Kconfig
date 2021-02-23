@@ -204,11 +204,11 @@ config MTK_COMBO_GPS
 	help
 	  MTK GPS /dev/stpgps driver
 
-config MTK_WIFI_PM_CONTROL
-        tristate "Mediatek Wi-Fi PM Control"
-        default y
-        help
-          Interface to control Wi-Fi Power Saver Modes
+config MTK_WIFI_PM_DISABLE
+	bool "Disable Mediatek Wi-Fi PM"
+	default n
+	help
+	Disable Mediatek Wi-Fi Power Saver
 
 config MTK_COMBO_WIFI
 	tristate "MediaTek combo chip Wi-Fi support"
