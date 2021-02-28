@@ -54,7 +54,11 @@ static int mt_dpidle_enter(struct cpuidle_device *dev,
 static int mt_soidle_enter(struct cpuidle_device *dev,
 			      struct cpuidle_driver *drv, int index)
 {
+#if defined(CONFIG_SUSPEND)
 	return soidle_enter(smp_processor_id());
+#else
+  return 1;
+#endif
 }
 
 static int mt_mcidle_enter(struct cpuidle_device *dev,

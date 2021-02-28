@@ -434,11 +434,15 @@ int mt_cpu_dormant(unsigned long flags)
 	mt_cpu_init_idle();
 #endif
 
+#if defined(CONFIG_SUSPEND)
 #ifndef CONFIG_ARM64
 	ret = cpu_suspend(flags, mt_cpu_dormant_psci);
 #else
 	ret = cpu_suspend(2);
 #endif
+#else
+  ret = -1;
+#endif /* CONFIG_SUSPEND */
 
 	DORMANT_LOG(clusterid * MAX_CORES + cpuid, 0x601);
 

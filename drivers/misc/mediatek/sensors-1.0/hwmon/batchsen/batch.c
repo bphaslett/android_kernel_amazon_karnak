@@ -114,7 +114,7 @@ static int get_fifo_data(struct batch_context *obj)
 			#ifdef CONFIG_PM_WAKELOCKS
 				/* __pm_stay_awake(&(batch_context_obj->read_data_wake_lock)); */
 			#else
-				wake_lock(&(batch_context_obj->read_data_wake_lock));
+				/* wake_lock(&(batch_context_obj->read_data_wake_lock)); */
 			#endif
 				obj->numOfDataLeft = fifo_len;
 				input_report_rel(obj->idev, EVENT_TYPE_BATCH_READY, fifo_len);
@@ -641,7 +641,7 @@ static long batch_unlocked_ioctl(struct file *fp, unsigned int cmd, unsigned lon
 		#ifdef CONFIG_PM_WAKELOCKS
 			/* __pm_relax(&(batch_context_obj->read_data_wake_lock)); */
 		#else
-			wake_unlock(&(batch_context_obj->read_data_wake_lock));
+			/* wake_unlock(&(batch_context_obj->read_data_wake_lock)); */
 		#endif
 		}
 
