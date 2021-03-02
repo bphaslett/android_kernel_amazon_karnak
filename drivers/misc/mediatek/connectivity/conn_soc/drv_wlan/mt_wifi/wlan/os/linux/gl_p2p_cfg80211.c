@@ -553,6 +553,14 @@ int mtk_p2p_cfg80211_set_power_mgmt(struct wiphy *wiphy, struct net_device *dev,
 
 	ASSERT(wiphy);
 
+#ifdef CONFIG_MTK_WIFI_PM_DISABLE
+  enabled = false;
+  dev->ieee80211_ptr->ps = false;
+#else
+  enabled = true;
+  ndev->ieee80211_ptr->ps = true;
+#endif
+
 	if (enabled)
 		value = 2;
 	else

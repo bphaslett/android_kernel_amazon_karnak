@@ -1283,6 +1283,14 @@ int mtk_cfg80211_set_power_mgmt(struct wiphy *wiphy, struct net_device *ndev, bo
 	prGlueInfo = (P_GLUE_INFO_T) wiphy_priv(wiphy);
 	ASSERT(prGlueInfo);
 
+#ifdef CONFIG_MTK_WIFI_PM_DISABLE
+  enabled = false;
+  ndev->ieee80211_ptr->ps = false;
+#else
+  enabled = true;
+  ndev->ieee80211_ptr->ps = true;
+#endif
+
 	if (enabled) {
 		if (timeout == -1)
 			ePowerMode = Param_PowerModeFast_PSP;
